@@ -85,5 +85,7 @@ py/code_generation/cache/
 
 # Generated wayland protocols
 # --------
-libs/io/platform/linux/wayland/generated/
-
+libs/io/platform/linux/wayland/generated/xdg/shell-client-protocol.h
+libs/io/platform/linux/wayland/generated/xdg/shell-protocol.c
+libs/io/platform/linux/wayland/generated/zxdg/decoration-client-protocol.h
+libs/io/platform/linux/wayland/generated/zxdg/decoration-protocol.c
