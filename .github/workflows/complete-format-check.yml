@@ -1,0 +1,27 @@
+name: Complete format check
+
+on:
+  push:
+    tags:
+      - v*
+
+workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - 'libs'
+          - 'tests'
+          - 'tutorials'
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run clang-format on ALL files in the codebase
+      uses: jidicula/clang-format-action@v4.15.0
+      with:
+        clang-format-version: '19'
+        check-path: ${{ matrix.path }}
