@@ -1,0 +1,8 @@
+# Third-party deps:
+dependencies/*
+# Generated code (historically not formatted to minimise diff when the generated code changes)
+libs/extension/functions/*
+libs/core/compare/*
+libs/core/enum/*
+libs/core/detail/chain_compatibility/*
+libs/core/detail/chain_validator/*
