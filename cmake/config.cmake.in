@@ -1,0 +1,79 @@
+include(CMakeFindDependencyMacro)
+
+#------------------------------------------------------------------------------
+# Notification
+
+message(STATUS "Found @FUBUKI_PROJECT@.")
+
+#------------------------------------------------------------------------------
+# Dependencies
+
+if(@FUBUKI_PROJECT@ STREQUAL "fubuki")
+
+    #----------------------------------------------------------------
+    # GLM
+
+    set(@FUBUKI_PROJECT@_GLM_DIR "@CMAKE_INSTALL_PREFIX@/lib/cmake/@FUBUKI_PROJECT@/dependencies/glm")
+
+    if(NOT DEFINED glm_FOUND OR NOT glm_FOUND)
+        if(NOT DEFINED glm_DIR OR "${glm_DIR}" STREQUAL "")
+            set(glm_DIR ${@FUBUKI_PROJECT@_GLM_DIR})
+        endif()
+        find_package(glm REQUIRED)
+    endif()
+
+endif()
+
+@FUBUKI_PACKAGE_DEPENDENCIES_SETUP@
+
+#------------------------------------------------------------------------------
+# Preprocessor
+
+add_compile_definitions($<$<CONFIG:Debug>:FUBUKI_DEBUG_BUILD>
+                        $<$<CONFIG:Release>:FUBUKI_RELEASE_BUILD>
+                        $<$<CONFIG:RelWithDebInfo>:FUBUKI_RELEASE_WITH_DEBUG_INFO_BUILD>
+                        $<$<CONFIG:MinSizeRel>:FUBUKI_MIN_SIZE_RELEASE_BUILD>)
+
+#------------------------------------------------------------------------------
+# Targets
+
+include("${CMAKE_CURRENT_LIST_DIR}/@FUBUKI_PROJECT@_targets.cmake")
+
+set(@FUBUKI_PROJECT@_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include")
+set(@FUBUKI_PROJECT@_COMPONENTS "@FUBUKI_PROJECT_components_value@")
+
+foreach(component ${@FUBUKI_PROJECT@_COMPONENTS})
+    if(WIN32)
+        if(MINGW)
+            set(expected_component_lib_file "@CMAKE_INSTALL_PREFIX@/lib/lib@FUBUKI_PROJECT@_${component}.dll.a")
+        elseif(MSVC)
+            set(expected_component_lib_file "@CMAKE_INSTALL_PREFIX@/lib/@FUBUKI_PROJECT@_${component}.lib")
+        endif()
+    elseif(UNIX)
+        set(expected_component_lib_file "@CMAKE_INSTALL_PREFIX@/lib/lib@FUBUKI_PROJECT@_${component}.so")
+    endif()
+
+    if(EXISTS "${expected_component_lib_file}")
+        set(@FUBUKI_PROJECT@_${component}_FOUND TRUE)
+        set(@FUBUKI_PROJECT@_${component}_LIBRARY "${expected_component_lib_file}")
+        add_library(@FUBUKI_PROJECT@_${component} ALIAS "@FUBUKI_PROJECT@::${component}")
+    endif()
+endforeach()
+
+unset(expected_component_lib_file) # Don't pollute user build
+
+if(WIN32)
+    if(MINGW)
+        file(GLOB @FUBUKI_PROJECT@_LIBRARIES "@CMAKE_INSTALL_PREFIX@/lib/*.a")
+    elseif(MSVC)
+        file(GLOB @FUBUKI_PROJECT@_LIBRARIES "@CMAKE_INSTALL_PREFIX@/lib/*.lib")
+    endif()
+elseif(UNIX)
+    file(GLOB @FUBUKI_PROJECT@_LIBRARIES "@CMAKE_INSTALL_PREFIX@/lib/*.so")
+endif()
+
+#------------------------------------------------------------------------------
+# Other
+
+# Allow subprojects to use the same warnings as Fubuki
+set(FUBUKI_WARNINGS @FUBUKI_WARNINGS@)

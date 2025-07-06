@@ -1,0 +1,451 @@
+﻿/*
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2025, Erwan DUHAMEL
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include <functional>
+#include <unordered_map>
+#include <unordered_set> // IWYU pragma: keep (Needed in instance, but not in device. However, it's simpler to generate both with the same template)
+
+#include "extension/functions/device_ext.hpp"
+
+#include <core/vulkan.hpp>
+
+namespace fubuki::extension
+{
+
+#if defined(FUBUKI_MAKE_LOADER)
+    #error "Internal error. Must not be defined."
+#endif
+
+#define FUBUKI_MAKE_LOADER(ext_name)                                                                            \
+    {ext_name::name,                                                                                            \
+     [](device_ext_functions& f, instance_handle i, version_number v, device_handle d)                          \
+     {                                                                                                          \
+         if(f.ext_name == nullptr)                                                                              \
+         {                                                                                                      \
+             f.ext_name = std::make_unique<extension::ext_name::functions>(extension::ext_name::load(i, v, d)); \
+         }                                                                                                      \
+     }}
+
+// Avoid the inlining of these functions, they make object code grow by A LOT
+device_functions::device_functions()                                       = default;
+device_functions::~device_functions()                                      = default;
+device_functions::device_functions(device_functions&&) noexcept            = default;
+device_functions& device_functions::operator=(device_functions&&) noexcept = default;
+
+//------------------------------------------------------------------------------
+
+[[nodiscard]]
+bool load(device_functions& functions, instance_handle instance, version_number version, device_handle device, std::string_view extension)
+{
+    using loader = std::function<void(device_functions & functions, instance_handle instance, version_number version, device_handle device)>;
+
+    // clang-format off
+    static const std::unordered_map<std::string_view, loader> supported_extensions
+    {
+        FUBUKI_MAKE_LOADER(khr_swapchain),
+        FUBUKI_MAKE_LOADER(khr_display_swapchain),
+        FUBUKI_MAKE_LOADER(nv_glsl_shader),
+        FUBUKI_MAKE_LOADER(ext_depth_range_unrestricted),
+        FUBUKI_MAKE_LOADER(khr_sampler_mirror_clamp_to_edge),
+        FUBUKI_MAKE_LOADER(img_filter_cubic),
+        FUBUKI_MAKE_LOADER(amd_rasterization_order),
+        FUBUKI_MAKE_LOADER(amd_shader_trinary_minmax),
+        FUBUKI_MAKE_LOADER(amd_shader_explicit_vertex_parameter),
+        FUBUKI_MAKE_LOADER(ext_debug_marker),
+        FUBUKI_MAKE_LOADER(khr_video_queue),
+        FUBUKI_MAKE_LOADER(khr_video_decode_queue),
+        FUBUKI_MAKE_LOADER(amd_gcn_shader),
+        FUBUKI_MAKE_LOADER(nv_dedicated_allocation),
+        FUBUKI_MAKE_LOADER(ext_transform_feedback),
+        FUBUKI_MAKE_LOADER(nvx_binary_import),
+        FUBUKI_MAKE_LOADER(nvx_image_view_handle),
+        FUBUKI_MAKE_LOADER(amd_draw_indirect_count),
+        FUBUKI_MAKE_LOADER(amd_negative_viewport_height),
+        FUBUKI_MAKE_LOADER(amd_gpu_shader_half_float),
+        FUBUKI_MAKE_LOADER(amd_shader_ballot),
+        FUBUKI_MAKE_LOADER(khr_video_encode_h264),
+        FUBUKI_MAKE_LOADER(khr_video_encode_h265),
+        FUBUKI_MAKE_LOADER(khr_video_decode_h264),
+        FUBUKI_MAKE_LOADER(amd_texture_gather_bias_lod),
+        FUBUKI_MAKE_LOADER(amd_shader_info),
+        FUBUKI_MAKE_LOADER(khr_dynamic_rendering),
+        FUBUKI_MAKE_LOADER(amd_shader_image_load_store_lod),
+        FUBUKI_MAKE_LOADER(nv_corner_sampled_image),
+        FUBUKI_MAKE_LOADER(khr_multiview),
+        FUBUKI_MAKE_LOADER(img_format_pvrtc),
+        FUBUKI_MAKE_LOADER(nv_external_memory),
+        FUBUKI_MAKE_LOADER(nv_external_memory_win32),
+        FUBUKI_MAKE_LOADER(nv_win32_keyed_mutex),
+        FUBUKI_MAKE_LOADER(khr_device_group),
+        FUBUKI_MAKE_LOADER(khr_shader_draw_parameters),
+        FUBUKI_MAKE_LOADER(ext_shader_subgroup_ballot),
+        FUBUKI_MAKE_LOADER(ext_shader_subgroup_vote),
+        FUBUKI_MAKE_LOADER(ext_texture_compression_astc_hdr),
+        FUBUKI_MAKE_LOADER(ext_astc_decode_mode),
+        FUBUKI_MAKE_LOADER(ext_pipeline_robustness),
+        FUBUKI_MAKE_LOADER(khr_maintenance1),
+        FUBUKI_MAKE_LOADER(khr_external_memory),
+        FUBUKI_MAKE_LOADER(khr_external_memory_win32),
+        FUBUKI_MAKE_LOADER(khr_external_memory_fd),
+        FUBUKI_MAKE_LOADER(khr_win32_keyed_mutex),
+        FUBUKI_MAKE_LOADER(khr_external_semaphore),
+        FUBUKI_MAKE_LOADER(khr_external_semaphore_win32),
+        FUBUKI_MAKE_LOADER(khr_external_semaphore_fd),
+        FUBUKI_MAKE_LOADER(khr_push_descriptor),
+        FUBUKI_MAKE_LOADER(ext_conditional_rendering),
+        FUBUKI_MAKE_LOADER(khr_shader_float16_int8),
+        FUBUKI_MAKE_LOADER(khr_16bit_storage),
+        FUBUKI_MAKE_LOADER(khr_incremental_present),
+        FUBUKI_MAKE_LOADER(khr_descriptor_update_template),
+        FUBUKI_MAKE_LOADER(nv_clip_space_w_scaling),
+        FUBUKI_MAKE_LOADER(ext_display_control),
+        FUBUKI_MAKE_LOADER(google_display_timing),
+        FUBUKI_MAKE_LOADER(nv_sample_mask_override_coverage),
+        FUBUKI_MAKE_LOADER(nv_geometry_shader_passthrough),
+        FUBUKI_MAKE_LOADER(nv_viewport_array2),
+        FUBUKI_MAKE_LOADER(nvx_multiview_per_view_attributes),
+        FUBUKI_MAKE_LOADER(nv_viewport_swizzle),
+        FUBUKI_MAKE_LOADER(ext_discard_rectangles),
+        FUBUKI_MAKE_LOADER(ext_conservative_rasterization),
+        FUBUKI_MAKE_LOADER(ext_depth_clip_enable),
+        FUBUKI_MAKE_LOADER(ext_hdr_metadata),
+        FUBUKI_MAKE_LOADER(khr_imageless_framebuffer),
+        FUBUKI_MAKE_LOADER(khr_create_renderpass2),
+        FUBUKI_MAKE_LOADER(img_relaxed_line_rasterization),
+        FUBUKI_MAKE_LOADER(khr_shared_presentable_image),
+        FUBUKI_MAKE_LOADER(khr_external_fence),
+        FUBUKI_MAKE_LOADER(khr_external_fence_win32),
+        FUBUKI_MAKE_LOADER(khr_external_fence_fd),
+        FUBUKI_MAKE_LOADER(khr_performance_query),
+        FUBUKI_MAKE_LOADER(khr_maintenance2),
+        FUBUKI_MAKE_LOADER(khr_variable_pointers),
+        FUBUKI_MAKE_LOADER(ext_external_memory_dma_buf),
+        FUBUKI_MAKE_LOADER(ext_queue_family_foreign),
+        FUBUKI_MAKE_LOADER(khr_dedicated_allocation),
+        FUBUKI_MAKE_LOADER(android_external_memory_android_hardware_buffer),
+        FUBUKI_MAKE_LOADER(ext_sampler_filter_minmax),
+        FUBUKI_MAKE_LOADER(khr_storage_buffer_storage_class),
+        FUBUKI_MAKE_LOADER(amd_gpu_shader_int16),
+        FUBUKI_MAKE_LOADER(amdx_shader_enqueue),
+        FUBUKI_MAKE_LOADER(amd_mixed_attachment_samples),
+        FUBUKI_MAKE_LOADER(amd_shader_fragment_mask),
+        FUBUKI_MAKE_LOADER(ext_inline_uniform_block),
+        FUBUKI_MAKE_LOADER(ext_shader_stencil_export),
+        FUBUKI_MAKE_LOADER(khr_shader_bfloat16),
+        FUBUKI_MAKE_LOADER(ext_sample_locations),
+        FUBUKI_MAKE_LOADER(khr_relaxed_block_layout),
+        FUBUKI_MAKE_LOADER(khr_get_memory_requirements2),
+        FUBUKI_MAKE_LOADER(khr_image_format_list),
+        FUBUKI_MAKE_LOADER(ext_blend_operation_advanced),
+        FUBUKI_MAKE_LOADER(nv_fragment_coverage_to_color),
+        FUBUKI_MAKE_LOADER(khr_acceleration_structure),
+        FUBUKI_MAKE_LOADER(khr_ray_tracing_pipeline),
+        FUBUKI_MAKE_LOADER(khr_ray_query),
+        FUBUKI_MAKE_LOADER(nv_framebuffer_mixed_samples),
+        FUBUKI_MAKE_LOADER(nv_fill_rectangle),
+        FUBUKI_MAKE_LOADER(nv_shader_sm_builtins),
+        FUBUKI_MAKE_LOADER(ext_post_depth_coverage),
+        FUBUKI_MAKE_LOADER(khr_sampler_ycbcr_conversion),
+        FUBUKI_MAKE_LOADER(khr_bind_memory2),
+        FUBUKI_MAKE_LOADER(ext_image_drm_format_modifier),
+        FUBUKI_MAKE_LOADER(ext_validation_cache),
+        FUBUKI_MAKE_LOADER(ext_descriptor_indexing),
+        FUBUKI_MAKE_LOADER(ext_shader_viewport_index_layer),
+        FUBUKI_MAKE_LOADER(khr_portability_subset),
+        FUBUKI_MAKE_LOADER(nv_shading_rate_image),
+        FUBUKI_MAKE_LOADER(nv_ray_tracing),
+        FUBUKI_MAKE_LOADER(nv_representative_fragment_test),
+        FUBUKI_MAKE_LOADER(khr_maintenance3),
+        FUBUKI_MAKE_LOADER(khr_draw_indirect_count),
+        FUBUKI_MAKE_LOADER(ext_filter_cubic),
+        FUBUKI_MAKE_LOADER(qcom_render_pass_shader_resolve),
+        FUBUKI_MAKE_LOADER(ext_global_priority),
+        FUBUKI_MAKE_LOADER(khr_shader_subgroup_extended_types),
+        FUBUKI_MAKE_LOADER(khr_8bit_storage),
+        FUBUKI_MAKE_LOADER(ext_external_memory_host),
+        FUBUKI_MAKE_LOADER(amd_buffer_marker),
+        FUBUKI_MAKE_LOADER(khr_shader_atomic_int64),
+        FUBUKI_MAKE_LOADER(khr_shader_clock),
+        FUBUKI_MAKE_LOADER(amd_pipeline_compiler_control),
+        FUBUKI_MAKE_LOADER(ext_calibrated_timestamps),
+        FUBUKI_MAKE_LOADER(amd_shader_core_properties),
+        FUBUKI_MAKE_LOADER(khr_video_decode_h265),
+        FUBUKI_MAKE_LOADER(khr_global_priority),
+        FUBUKI_MAKE_LOADER(amd_memory_overallocation_behavior),
+        FUBUKI_MAKE_LOADER(ext_vertex_attribute_divisor),
+        FUBUKI_MAKE_LOADER(ggp_frame_token),
+        FUBUKI_MAKE_LOADER(ext_pipeline_creation_feedback),
+        FUBUKI_MAKE_LOADER(khr_driver_properties),
+        FUBUKI_MAKE_LOADER(khr_shader_float_controls),
+        FUBUKI_MAKE_LOADER(nv_shader_subgroup_partitioned),
+        FUBUKI_MAKE_LOADER(khr_depth_stencil_resolve),
+        FUBUKI_MAKE_LOADER(khr_swapchain_mutable_format),
+        FUBUKI_MAKE_LOADER(nv_compute_shader_derivatives),
+        FUBUKI_MAKE_LOADER(nv_mesh_shader),
+        FUBUKI_MAKE_LOADER(nv_fragment_shader_barycentric),
+        FUBUKI_MAKE_LOADER(nv_shader_image_footprint),
+        FUBUKI_MAKE_LOADER(nv_scissor_exclusive),
+        FUBUKI_MAKE_LOADER(nv_device_diagnostic_checkpoints),
+        FUBUKI_MAKE_LOADER(khr_timeline_semaphore),
+        FUBUKI_MAKE_LOADER(intel_shader_integer_functions2),
+        FUBUKI_MAKE_LOADER(intel_performance_query),
+        FUBUKI_MAKE_LOADER(khr_vulkan_memory_model),
+        FUBUKI_MAKE_LOADER(ext_pci_bus_info),
+        FUBUKI_MAKE_LOADER(amd_display_native_hdr),
+        FUBUKI_MAKE_LOADER(khr_shader_terminate_invocation),
+        FUBUKI_MAKE_LOADER(ext_fragment_density_map),
+        FUBUKI_MAKE_LOADER(ext_scalar_block_layout),
+        FUBUKI_MAKE_LOADER(google_hlsl_functionality1),
+        FUBUKI_MAKE_LOADER(google_decorate_string),
+        FUBUKI_MAKE_LOADER(ext_subgroup_size_control),
+        FUBUKI_MAKE_LOADER(khr_fragment_shading_rate),
+        FUBUKI_MAKE_LOADER(amd_shader_core_properties2),
+        FUBUKI_MAKE_LOADER(amd_device_coherent_memory),
+        FUBUKI_MAKE_LOADER(khr_dynamic_rendering_local_read),
+        FUBUKI_MAKE_LOADER(ext_shader_image_atomic_int64),
+        FUBUKI_MAKE_LOADER(khr_shader_quad_control),
+        FUBUKI_MAKE_LOADER(khr_spirv_1_4),
+        FUBUKI_MAKE_LOADER(ext_memory_budget),
+        FUBUKI_MAKE_LOADER(ext_memory_priority),
+        FUBUKI_MAKE_LOADER(nv_dedicated_allocation_image_aliasing),
+        FUBUKI_MAKE_LOADER(khr_separate_depth_stencil_layouts),
+        FUBUKI_MAKE_LOADER(ext_buffer_device_address),
+        FUBUKI_MAKE_LOADER(ext_tooling_info),
+        FUBUKI_MAKE_LOADER(ext_separate_stencil_usage),
+        FUBUKI_MAKE_LOADER(khr_present_wait),
+        FUBUKI_MAKE_LOADER(nv_cooperative_matrix),
+        FUBUKI_MAKE_LOADER(nv_coverage_reduction_mode),
+        FUBUKI_MAKE_LOADER(ext_fragment_shader_interlock),
+        FUBUKI_MAKE_LOADER(ext_ycbcr_image_arrays),
+        FUBUKI_MAKE_LOADER(khr_uniform_buffer_standard_layout),
+        FUBUKI_MAKE_LOADER(ext_provoking_vertex),
+        FUBUKI_MAKE_LOADER(ext_full_screen_exclusive),
+        FUBUKI_MAKE_LOADER(khr_buffer_device_address),
+        FUBUKI_MAKE_LOADER(ext_line_rasterization),
+        FUBUKI_MAKE_LOADER(ext_shader_atomic_float),
+        FUBUKI_MAKE_LOADER(ext_host_query_reset),
+        FUBUKI_MAKE_LOADER(ext_index_type_uint8),
+        FUBUKI_MAKE_LOADER(ext_extended_dynamic_state),
+        FUBUKI_MAKE_LOADER(khr_deferred_host_operations),
+        FUBUKI_MAKE_LOADER(khr_pipeline_executable_properties),
+        FUBUKI_MAKE_LOADER(ext_host_image_copy),
+        FUBUKI_MAKE_LOADER(khr_map_memory2),
+        FUBUKI_MAKE_LOADER(ext_map_memory_placed),
+        FUBUKI_MAKE_LOADER(ext_shader_atomic_float2),
+        FUBUKI_MAKE_LOADER(ext_swapchain_maintenance1),
+        FUBUKI_MAKE_LOADER(ext_shader_demote_to_helper_invocation),
+        FUBUKI_MAKE_LOADER(nv_device_generated_commands),
+        FUBUKI_MAKE_LOADER(nv_inherited_viewport_scissor),
+        FUBUKI_MAKE_LOADER(khr_shader_integer_dot_product),
+        FUBUKI_MAKE_LOADER(ext_texel_buffer_alignment),
+        FUBUKI_MAKE_LOADER(qcom_render_pass_transform),
+        FUBUKI_MAKE_LOADER(ext_depth_bias_control),
+        FUBUKI_MAKE_LOADER(ext_device_memory_report),
+        FUBUKI_MAKE_LOADER(ext_robustness2),
+        FUBUKI_MAKE_LOADER(ext_custom_border_color),
+        FUBUKI_MAKE_LOADER(google_user_type),
+        FUBUKI_MAKE_LOADER(khr_pipeline_library),
+        FUBUKI_MAKE_LOADER(nv_present_barrier),
+        FUBUKI_MAKE_LOADER(khr_shader_non_semantic_info),
+        FUBUKI_MAKE_LOADER(khr_present_id),
+        FUBUKI_MAKE_LOADER(ext_private_data),
+        FUBUKI_MAKE_LOADER(ext_pipeline_creation_cache_control),
+        FUBUKI_MAKE_LOADER(khr_video_encode_queue),
+        FUBUKI_MAKE_LOADER(nv_device_diagnostics_config),
+        FUBUKI_MAKE_LOADER(qcom_render_pass_store_ops),
+        FUBUKI_MAKE_LOADER(nv_cuda_kernel_launch),
+        FUBUKI_MAKE_LOADER(nv_low_latency),
+        FUBUKI_MAKE_LOADER(ext_metal_objects),
+        FUBUKI_MAKE_LOADER(khr_synchronization2),
+        FUBUKI_MAKE_LOADER(ext_descriptor_buffer),
+        FUBUKI_MAKE_LOADER(ext_graphics_pipeline_library),
+        FUBUKI_MAKE_LOADER(amd_shader_early_and_late_fragment_tests),
+        FUBUKI_MAKE_LOADER(khr_fragment_shader_barycentric),
+        FUBUKI_MAKE_LOADER(khr_shader_subgroup_uniform_control_flow),
+        FUBUKI_MAKE_LOADER(khr_zero_initialize_workgroup_memory),
+        FUBUKI_MAKE_LOADER(nv_fragment_shading_rate_enums),
+        FUBUKI_MAKE_LOADER(nv_ray_tracing_motion_blur),
+        FUBUKI_MAKE_LOADER(ext_mesh_shader),
+        FUBUKI_MAKE_LOADER(ext_ycbcr_2plane_444_formats),
+        FUBUKI_MAKE_LOADER(ext_fragment_density_map2),
+        FUBUKI_MAKE_LOADER(qcom_rotated_copy_commands),
+        FUBUKI_MAKE_LOADER(ext_image_robustness),
+        FUBUKI_MAKE_LOADER(khr_workgroup_memory_explicit_layout),
+        FUBUKI_MAKE_LOADER(khr_copy_commands2),
+        FUBUKI_MAKE_LOADER(ext_image_compression_control),
+        FUBUKI_MAKE_LOADER(ext_attachment_feedback_loop_layout),
+        FUBUKI_MAKE_LOADER(ext_4444_formats),
+        FUBUKI_MAKE_LOADER(ext_device_fault),
+        FUBUKI_MAKE_LOADER(arm_rasterization_order_attachment_access),
+        FUBUKI_MAKE_LOADER(ext_rgba10x6_formats),
+        FUBUKI_MAKE_LOADER(nv_acquire_winrt_display),
+        FUBUKI_MAKE_LOADER(valve_mutable_descriptor_type),
+        FUBUKI_MAKE_LOADER(ext_vertex_input_dynamic_state),
+        FUBUKI_MAKE_LOADER(ext_physical_device_drm),
+        FUBUKI_MAKE_LOADER(ext_device_address_binding_report),
+        FUBUKI_MAKE_LOADER(ext_depth_clip_control),
+        FUBUKI_MAKE_LOADER(ext_primitive_topology_list_restart),
+        FUBUKI_MAKE_LOADER(khr_format_feature_flags2),
+        FUBUKI_MAKE_LOADER(ext_present_mode_fifo_latest_ready),
+        FUBUKI_MAKE_LOADER(fuchsia_external_memory),
+        FUBUKI_MAKE_LOADER(fuchsia_external_semaphore),
+        FUBUKI_MAKE_LOADER(fuchsia_buffer_collection),
+        FUBUKI_MAKE_LOADER(huawei_subpass_shading),
+        FUBUKI_MAKE_LOADER(huawei_invocation_mask),
+        FUBUKI_MAKE_LOADER(nv_external_memory_rdma),
+        FUBUKI_MAKE_LOADER(ext_pipeline_properties),
+        FUBUKI_MAKE_LOADER(ext_frame_boundary),
+        FUBUKI_MAKE_LOADER(ext_multisampled_render_to_single_sampled),
+        FUBUKI_MAKE_LOADER(ext_extended_dynamic_state2),
+        FUBUKI_MAKE_LOADER(ext_color_write_enable),
+        FUBUKI_MAKE_LOADER(ext_primitives_generated_query),
+        FUBUKI_MAKE_LOADER(khr_ray_tracing_maintenance1),
+        FUBUKI_MAKE_LOADER(ext_global_priority_query),
+        FUBUKI_MAKE_LOADER(ext_image_view_min_lod),
+        FUBUKI_MAKE_LOADER(ext_multi_draw),
+        FUBUKI_MAKE_LOADER(ext_image_2d_view_of_3d),
+        FUBUKI_MAKE_LOADER(ext_shader_tile_image),
+        FUBUKI_MAKE_LOADER(ext_opacity_micromap),
+        FUBUKI_MAKE_LOADER(nv_displacement_micromap),
+        FUBUKI_MAKE_LOADER(ext_load_store_op_none),
+        FUBUKI_MAKE_LOADER(huawei_cluster_culling_shader),
+        FUBUKI_MAKE_LOADER(ext_border_color_swizzle),
+        FUBUKI_MAKE_LOADER(ext_pageable_device_local_memory),
+        FUBUKI_MAKE_LOADER(khr_maintenance4),
+        FUBUKI_MAKE_LOADER(arm_shader_core_properties),
+        FUBUKI_MAKE_LOADER(khr_shader_subgroup_rotate),
+        FUBUKI_MAKE_LOADER(arm_scheduling_controls),
+        FUBUKI_MAKE_LOADER(ext_image_sliced_view_of_3d),
+        FUBUKI_MAKE_LOADER(valve_descriptor_set_host_mapping),
+        FUBUKI_MAKE_LOADER(ext_depth_clamp_zero_one),
+        FUBUKI_MAKE_LOADER(ext_non_seamless_cube_map),
+        FUBUKI_MAKE_LOADER(arm_render_pass_striped),
+        FUBUKI_MAKE_LOADER(qcom_fragment_density_map_offset),
+        FUBUKI_MAKE_LOADER(nv_copy_memory_indirect),
+        FUBUKI_MAKE_LOADER(nv_memory_decompression),
+        FUBUKI_MAKE_LOADER(nv_device_generated_commands_compute),
+        FUBUKI_MAKE_LOADER(nv_ray_tracing_linear_swept_spheres),
+        FUBUKI_MAKE_LOADER(nv_linear_color_attachment),
+        FUBUKI_MAKE_LOADER(khr_shader_maximal_reconvergence),
+        FUBUKI_MAKE_LOADER(ext_image_compression_control_swapchain),
+        FUBUKI_MAKE_LOADER(qcom_image_processing),
+        FUBUKI_MAKE_LOADER(ext_nested_command_buffer),
+        FUBUKI_MAKE_LOADER(ext_external_memory_acquire_unmodified),
+        FUBUKI_MAKE_LOADER(ext_extended_dynamic_state3),
+        FUBUKI_MAKE_LOADER(ext_subpass_merge_feedback),
+        FUBUKI_MAKE_LOADER(ext_shader_module_identifier),
+        FUBUKI_MAKE_LOADER(ext_rasterization_order_attachment_access),
+        FUBUKI_MAKE_LOADER(nv_optical_flow),
+        FUBUKI_MAKE_LOADER(ext_legacy_dithering),
+        FUBUKI_MAKE_LOADER(ext_pipeline_protected_access),
+        FUBUKI_MAKE_LOADER(android_external_format_resolve),
+        FUBUKI_MAKE_LOADER(khr_maintenance5),
+        FUBUKI_MAKE_LOADER(amd_anti_lag),
+        FUBUKI_MAKE_LOADER(khr_ray_tracing_position_fetch),
+        FUBUKI_MAKE_LOADER(ext_shader_object),
+        FUBUKI_MAKE_LOADER(khr_pipeline_binary),
+        FUBUKI_MAKE_LOADER(qcom_tile_properties),
+        FUBUKI_MAKE_LOADER(sec_amigo_profiling),
+        FUBUKI_MAKE_LOADER(qcom_multiview_per_view_viewports),
+        FUBUKI_MAKE_LOADER(nv_ray_tracing_invocation_reorder),
+        FUBUKI_MAKE_LOADER(nv_cooperative_vector),
+        FUBUKI_MAKE_LOADER(nv_extended_sparse_address_space),
+        FUBUKI_MAKE_LOADER(ext_mutable_descriptor_type),
+        FUBUKI_MAKE_LOADER(ext_legacy_vertex_attributes),
+        FUBUKI_MAKE_LOADER(arm_shader_core_builtins),
+        FUBUKI_MAKE_LOADER(ext_pipeline_library_group_handles),
+        FUBUKI_MAKE_LOADER(ext_dynamic_rendering_unused_attachments),
+        FUBUKI_MAKE_LOADER(nv_low_latency2),
+        FUBUKI_MAKE_LOADER(khr_cooperative_matrix),
+        FUBUKI_MAKE_LOADER(qcom_multiview_per_view_render_areas),
+        FUBUKI_MAKE_LOADER(khr_compute_shader_derivatives),
+        FUBUKI_MAKE_LOADER(khr_video_decode_av1),
+        FUBUKI_MAKE_LOADER(khr_video_encode_av1),
+        FUBUKI_MAKE_LOADER(khr_video_maintenance1),
+        FUBUKI_MAKE_LOADER(nv_per_stage_descriptor_set),
+        FUBUKI_MAKE_LOADER(qcom_image_processing2),
+        FUBUKI_MAKE_LOADER(qcom_filter_cubic_weights),
+        FUBUKI_MAKE_LOADER(qcom_ycbcr_degamma),
+        FUBUKI_MAKE_LOADER(qcom_filter_cubic_clamp),
+        FUBUKI_MAKE_LOADER(ext_attachment_feedback_loop_dynamic_state),
+        FUBUKI_MAKE_LOADER(khr_vertex_attribute_divisor),
+        FUBUKI_MAKE_LOADER(khr_load_store_op_none),
+        FUBUKI_MAKE_LOADER(khr_shader_float_controls2),
+        FUBUKI_MAKE_LOADER(qnx_external_memory_screen_buffer),
+        FUBUKI_MAKE_LOADER(msft_layered_driver),
+        FUBUKI_MAKE_LOADER(khr_index_type_uint8),
+        FUBUKI_MAKE_LOADER(khr_line_rasterization),
+        FUBUKI_MAKE_LOADER(khr_calibrated_timestamps),
+        FUBUKI_MAKE_LOADER(khr_shader_expect_assume),
+        FUBUKI_MAKE_LOADER(khr_maintenance6),
+        FUBUKI_MAKE_LOADER(nv_descriptor_pool_overallocation),
+        FUBUKI_MAKE_LOADER(khr_video_encode_quantization_map),
+        FUBUKI_MAKE_LOADER(nv_raw_access_chains),
+        FUBUKI_MAKE_LOADER(khr_shader_relaxed_extended_instruction),
+        FUBUKI_MAKE_LOADER(nv_command_buffer_inheritance),
+        FUBUKI_MAKE_LOADER(khr_maintenance7),
+        FUBUKI_MAKE_LOADER(nv_shader_atomic_float16_vector),
+        FUBUKI_MAKE_LOADER(ext_shader_replicated_composites),
+        FUBUKI_MAKE_LOADER(nv_ray_tracing_validation),
+        FUBUKI_MAKE_LOADER(nv_cluster_acceleration_structure),
+        FUBUKI_MAKE_LOADER(nv_partitioned_acceleration_structure),
+        FUBUKI_MAKE_LOADER(ext_device_generated_commands),
+        FUBUKI_MAKE_LOADER(khr_maintenance8),
+        FUBUKI_MAKE_LOADER(mesa_image_alignment_control),
+        FUBUKI_MAKE_LOADER(ext_depth_clamp_control),
+        FUBUKI_MAKE_LOADER(khr_video_maintenance2),
+        FUBUKI_MAKE_LOADER(huawei_hdr_vivid),
+        FUBUKI_MAKE_LOADER(nv_cooperative_matrix2),
+        FUBUKI_MAKE_LOADER(arm_pipeline_opacity_micromap),
+        FUBUKI_MAKE_LOADER(ext_external_memory_metal),
+        FUBUKI_MAKE_LOADER(khr_depth_clamp_zero_one),
+        FUBUKI_MAKE_LOADER(ext_vertex_attribute_robustness),
+        FUBUKI_MAKE_LOADER(nv_present_metering),
+        FUBUKI_MAKE_LOADER(ext_fragment_density_map_offset),
+
+    };
+    // clang-format on
+
+    if(const auto it = supported_extensions.find(extension); it != supported_extensions.end())
+    {
+        const auto& ext_loader = it->second;
+        ext_loader(functions, instance, version, device);
+        return true;
+    }
+
+    return false;
+}
+
+#undef FUBUKI_MAKE_LOADER
+
+} // namespace fubuki::extension
