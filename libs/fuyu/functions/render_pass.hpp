@@ -1,0 +1,90 @@
+/*
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2025, Erwan DUHAMEL
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#ifndef FUBUKI_FUYU_FUNCTIONS_RENDER_PASS_HPP
+#define FUBUKI_FUYU_FUNCTIONS_RENDER_PASS_HPP
+
+#include <core/config/macros.hpp>
+#include <core/pnext_chain.hpp>
+
+#include "fuyu/rendering_area.hpp" // IWYU pragma: keep
+#include "fuyu/views/render_pass.hpp"
+
+namespace fubuki::fuyu
+{
+
+namespace detail
+{
+
+#if defined(VK_VERSION_1_4)
+
+/**
+ * Returns the granularity for dynamic rendering optimal render area.
+ * @see https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetRenderingAreaGranularity.html
+ */
+[[nodiscard]] FUBUKI_FUYU_API VkExtent2D render_area_granularity(device_cref device, const VkRenderingAreaInfo& info) noexcept;
+
+#endif // defined(VK_VERSION_1_4)
+
+} // namespace detail
+
+/**
+ * Returns the granularity for optimal render area.
+ * @see https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetRenderAreaGranularity.html
+ */
+[[nodiscard]] FUBUKI_FUYU_API VkExtent2D render_area_granularity(render_pass_view pass) noexcept;
+
+#if defined(VK_VERSION_1_4)
+
+/**
+ * Returns the granularity for dynamic rendering optimal render area.
+ * @see https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetRenderingAreaGranularity.html
+ */
+template<typename... elements>
+[[nodiscard]] inline VkExtent2D
+render_area_granularity(device_cref device, const rendering_area& area, const pnext_chain<elements...>& pnext) noexcept
+{
+    auto vk_info = to_underlying(area);
+    fubuki::extend(vk_info, pnext);
+    return detail::render_area_granularity(device, vk_info);
+}
+
+/**
+ * Returns the granularity for dynamic rendering optimal render area.
+ * @see https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetRenderingAreaGranularity.html
+ */
+[[nodiscard]] inline VkExtent2D render_area_granularity(device_cref device, const rendering_area& area) noexcept
+{
+    return render_area_granularity(device, area, empty_pnext_chain);
+}
+
+#endif // defined(VK_VERSION_1_4)
+
+} // namespace fubuki::fuyu
+
+#endif // FUBUKI_FUYU_FUNCTIONS_RENDER_PASS_HPP

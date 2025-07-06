@@ -1,0 +1,60 @@
+﻿/*
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2025, Erwan DUHAMEL
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#ifndef FUBUKI_FUYU_COMMAND_PIPE_RECORD_HPP
+#define FUBUKI_FUYU_COMMAND_PIPE_RECORD_HPP
+
+#include "fuyu/command/pipe/flow.hpp"
+#include "fuyu/command/pipe/tag.hpp"
+#include "fuyu/functions/command_buffer.hpp"
+#include "fuyu/views/command_buffer.hpp"
+
+namespace fubuki::fuyu::command::pipe::detail
+{
+
+struct record
+{
+    template<typename... arguments>
+    flow operator()(command_buffer_view command_buffer, arguments&&... args) const noexcept
+    {
+        const auto begin = fuyu::begin(command_buffer, std::forward<arguments>(args)...);
+
+        if(not begin)
+        {
+            return {command_buffer, {error::begin{begin.error()}}};
+        }
+
+        return {command_buffer};
+    }
+
+    flow operator()(already_started tag) const noexcept { return {tag.command_buffer}; }
+};
+
+} // namespace fubuki::fuyu::command::pipe::detail
+
+#endif // FUBUKI_FUYU_COMMAND_PIPE_RECORD_HPP
