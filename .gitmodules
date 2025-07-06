@@ -1,0 +1,9 @@
+[submodule "dependencies/glm"]
+	path = dependencies/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "dependencies/glslang"]
+	path = dependencies/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "dependencies/googletest"]
+	path = dependencies/googletest
+	url = https://github.com/google/googletest.git
