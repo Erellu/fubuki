@@ -1,0 +1,17 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+/*
+ * This header is provided to avoid having to regenerate top-level (user-exposed) headers.
+ * Its contents may change without notice between versions.
+ */
+
+#ifndef FUBUKI_CORE_ENUMS_HPP
+#define FUBUKI_CORE_ENUMS_HPP
+
+@GENERATED_CODE@
+
+#endif // FUBUKI_CORE_ENUMS_HPP

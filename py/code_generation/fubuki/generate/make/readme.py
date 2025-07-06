@@ -1,0 +1,69 @@
+﻿#
+# BSD 2-Clause License
+#
+# Copyright (c) 2025, Erwan DUHAMEL
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import os
+
+from fubuki.data import registry
+from fubuki.formatting.string import to_snake_case
+
+#------------------------------------------------------------------------------
+
+def ext(api_registry: registry.api, args: dict) -> dict:
+#{
+    ext_dir : pathlib.Path = args["ext_dir"]
+
+    device_extensions   = ""
+    instance_extensions = ""
+
+    for _, ext in api_registry.extensions.items():
+    #{
+        short_name = to_snake_case(ext.name).removeprefix("vk_")
+        file_name = short_name + ".hpp"
+
+        supported = "- [x] " if (os.path.isfile(ext_dir / file_name) or ext.name in registry.enumerate_surface_extensions()) else "- [ ] "
+
+        if(ext.type == "instance"):
+        #{
+            instance_extensions += supported + ext.name + "\n"
+        #}
+        elif(ext.type == "device"):
+        #{
+            device_extensions += supported + ext.name + "\n"
+        #}
+    #}
+
+    return {"instance_ext": "\n".join(sorted(instance_extensions.split('\n'))), \
+            "device_ext": "\n".join(sorted(device_extensions.split('\n')))}
+#}
+
+#------------------------------------------------------------------------------
+
+def finalise_ext(license: str, api_registry: registry.api, template: str, generated_code: dict, args: dict) -> str:
+#{
+    return template.replace("@INSTANCE_EXTENSIONS@", generated_code["instance_ext"])\
+                   .replace("@DEVICE_EXTENSIONS@", generated_code["device_ext"])
+#}

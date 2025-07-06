@@ -1,0 +1,119 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_FORMAT_HPP
+#define FUBUKI_CORE_FORMAT_HPP
+
+#include <climits>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+
+#include <core/config/macros.hpp>
+#include <core/handle.hpp>
+#include <core/vulkan.hpp>
+
+// In such environnements, there will be mismatches between sizes for the GPU and CPU. Not taking risks.
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
+static_assert(CHAR_BIT == 8, "Fubuki does not support systems for which a byte is not 8 bits.");
+
+namespace fubuki
+{
+
+//------------------------------------------------------------------------------
+
+struct format_description
+{
+    struct rgba
+    {
+        struct component
+        {
+            enum class numeric
+            {
+                unorm,
+                snorm,
+                uscaled,
+                sscaled,
+                sint,
+                uint,
+                sfloat,
+                ufloat,
+                srgb,
+                sfixed5,
+            };
+
+            std::size_t                bits           = {}; ///< The size in bits.
+            numeric                    numeric_format = {}; ///< The numeric format for this component.
+            std::optional<std::size_t> plane_index    = {}; ///< The index of the plane for this component, or nullopt.
+        };
+
+        std::optional<component> r = {}; ///< How the R format is represented, or nullopt if there is none for this format.
+        std::optional<component> g = {}; ///< How the G format is represented, or nullopt if there is none for this format.
+        std::optional<component> b = {}; ///< How the B format is represented, or nullopt if there is none for this format.
+        std::optional<component> a = {}; ///< How the A format is represented, or nullopt if there is none for this format.
+    };
+
+    struct plane
+    {
+        std::size_t width_divisor  = 1;  ///< The width divisor of this plane.
+        std::size_t height_divisor = 1;  ///< The height divisor of this plane.
+        VkFormat    compatible     = {}; ///< A format with which this plane is compatible.
+    };
+
+    VkFormat                                           format           = {}; ///< Format.
+    std::size_t                                        block_size       = {}; ///< Texel block size in bytes.
+    VkExtent3D                                         block_extent     = {}; ///< Texel block extent
+    std::uint32_t                                      texels_per_block = {}; ///< Number of texels per blocks.
+    rgba                                               components       = {}; ///< The components of the format.
+    std::optional<std::uint32_t>                       chroma           = {}; ///< The chroma for planar formats, or nullopt for others.
+    std::optional<std::size_t>                         packing          = {}; ///< The packing for packed formats, or nullopt for others.
+    std::optional<std::array<std::optional<plane>, 3>> planes           = {}; ///< Information about the planes for planar formats, or nullopt.
+};
+
+//------------------------------------------------------------------------------
+
+/// Returns information about the features supported by a device for a format.
+FUBUKI_CORE_API
+extern VkFormatProperties properties(physical_device_handle d, VkFormat f) noexcept;
+
+//------------------------------------------------------------------------------
+
+/// Returns information about a VkFormat.
+[[nodiscard]]
+inline constexpr format_description description(const VkFormat f) noexcept
+{
+    // See https://registry.khronos.org/vulkan/specs/1.3/html/chap34.html#formats-compatibility-classes
+    // See also https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html
+
+    using enum format_description::rgba::component::numeric;
+
+    format_description result;
+    result.format = f;
+
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, bugprone-branch-clone)
+    // clang-format off
+    switch(f)
+    {
+@GENERATED_CODE@
+
+            //---------------------------------------
+            // Invalid values
+
+        default:
+        case(VK_FORMAT_UNDEFINED):
+        case(VK_FORMAT_MAX_ENUM):
+        {
+            break;
+        }
+    }
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, bugprone-branch-clone)
+    // clang-format on
+    return result;
+}
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_FORMAT_HPP

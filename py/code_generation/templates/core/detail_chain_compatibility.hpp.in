@@ -1,0 +1,39 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_DETAIL_CHAIN_COMPATIBILITY_@FUBUKI_STRUCT_NAME_UPPER@_HPP
+#define FUBUKI_CORE_DETAIL_CHAIN_COMPATIBILITY_@FUBUKI_STRUCT_NAME_UPPER@_HPP
+
+#include "core/detail/pnext_parent.hpp"
+#include "core/vulkan.hpp" // IWYU pragma: keep
+
+#include <tuple> // IWYU pragma: keep
+
+namespace fubuki::detail::pnext_chain
+{
+
+template<typename structure_type>
+struct chain_compatibility;
+
+#if defined(@STRUCT_PROVIDER@)
+
+template<>
+struct chain_compatibility<@VK_STRUCT_NAME@>
+{
+    // clang-format off
+    static constexpr auto parents_v = make_parents<>{}
+                                      @GENERATED_CODE@
+                                      ;
+    // clang-format on
+
+    using type    = @VK_STRUCT_NAME@;
+    using parents = decltype(parents_v)::type;
+};
+#endif // #if defined(@STRUCT_PROVIDER@)
+
+} // namespace fubuki::detail::pnext_chain
+
+#endif // FUBUKI_CORE_DETAIL_CHAIN_COMPATIBILITY_@FUBUKI_STRUCT_NAME_UPPER@_HPP

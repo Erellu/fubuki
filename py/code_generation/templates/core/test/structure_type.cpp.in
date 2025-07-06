@@ -1,0 +1,62 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include <gtest/gtest.h>
+
+#include <core/structure_type.hpp>
+
+#define STATIC_EXPECT_TRUE(x) \
+    static_assert((x));       \
+    EXPECT_TRUE((x))
+#define STATIC_EXPECT_FALSE(x) \
+    static_assert(not(x));     \
+    EXPECT_FALSE((x))
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4883)
+#endif
+
+namespace
+{
+
+TEST(structure_type, vk_struct_concept)
+{
+@VK_STRUCT_CONCEPT_TEST_BODY@
+
+    STATIC_EXPECT_FALSE((fubuki::vk_struct<VkBuffer>) );
+    STATIC_EXPECT_FALSE((fubuki::vk_struct<int>) );
+    STATIC_EXPECT_FALSE((fubuki::vk_struct<fubuki::structure_type<VkBufferCreateInfo>>) );
+    STATIC_EXPECT_FALSE((fubuki::vk_struct<fubuki::structure_type<int>>) );
+}
+
+TEST(structure_type, make)
+{
+
+    // clang-format off
+#define DO_MAKE_TEST(vk_structure, vk_enum)                                                  \
+    do                                                                                       \
+    {                                                                                        \
+        constexpr auto structure = fubuki::make<vk_structure>();                          \
+        STATIC_EXPECT_TRUE((structure.sType == fubuki::structure_type_v<vk_structure>) ); \
+        STATIC_EXPECT_TRUE((structure.sType == (vk_enum)));                                  \
+    }                                                                                        \
+    while(false)
+    // clang-format on
+
+@MAKE_TEST_BODY@
+
+#undef DO_MAKE_TEST
+}
+
+#undef STATIC_EXPECT_TRUE
+#undef STATIC_EXPECT_FALSE
+
+} // anonymous namespace
+
+#if defined(_MSC_VER)
+    #pragma warning(pop)
+#endif

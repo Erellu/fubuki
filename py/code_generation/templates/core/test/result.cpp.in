@@ -1,0 +1,87 @@
+﻿
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include <array>
+#include <ranges>
+#include <utility>
+
+#include <gtest/gtest.h>
+
+#include <core/result.hpp>
+#include <core/validate.hpp>
+
+namespace
+{
+
+#define MAKE_VK_RESULT(x) std::pair<VkResult, std::string_view>(x, #x)
+
+inline constexpr std::array vk_results = 
+{
+@GENERATED_CODE@
+};
+
+#undef MAKE_VK_RESULT
+
+TEST(result, to_string)
+{
+    for(const auto& result : vk_results)
+    {
+        // When an extension gets promotted from EXT to KHR or from KHR to core, the suffix changes, but not the result
+        EXPECT_TRUE(str.starts_with(fubuki::to_string_view(value)));
+        EXPECT_TRUE(std::string{str}.starts_with(fubuki::to_string(value)));
+    }
+}
+
+TEST(result, result)
+{
+    for(const auto& [value, str] : vk_results)
+    {
+        const auto fbk_result = fubuki::result{value};
+
+        const std::string      as_string      = fbk_result;
+        const bool             as_bool        = fbk_result.operator bool();
+        const VkResult         as_result      = fbk_result;
+        const std::string_view as_string_view = fbk_result;
+
+        EXPECT_TRUE((value == VK_SUCCESS and as_bool) or (value != VK_SUCCESS and not as_bool)) << "Failed for " << str << ": as_bool is " << as_bool;
+
+        EXPECT_EQ(fbk_result.code, value) << "Failed for " << str;
+        EXPECT_EQ(fbk_result.code, as_result) << "Failed for " << str;
+
+        EXPECT_EQ(as_string_view, fubuki::to_string_view(value));
+        EXPECT_EQ(as_string, fubuki::to_string(value));
+    }
+}
+
+TEST(result, api_call_info)
+{
+    for(const auto& [value, str] : vk_results)
+    {
+        const fubuki::api_call_info call{.result = {.code = value}, .call_literal = {}, .location = std::source_location::current()};
+
+        const auto fbk_result = fubuki::result{value};
+
+        const VkResult as_result = call;
+
+        EXPECT_EQ(static_cast<bool>(call), static_cast<bool>(fbk_result)) << "Failed for " << str;
+        EXPECT_EQ(as_result, static_cast<VkResult>(fbk_result)) << "Failed for " << str;
+        EXPECT_EQ(as_result, static_cast<VkResult>(call)) << "Failed for " << str;
+        EXPECT_EQ(as_result, value) << "Failed for " << str;
+    }
+}
+
+
+TEST(result, validate_call)
+{
+    for(const auto& [result, str] : vk_results | std::views::drop(1))
+    {
+        EXPECT_THROW(fubuki_validate(fubuki::validate_by::throw_call_info, result), fubuki::api_call_info) << "Failed for " << str;
+    }
+
+    EXPECT_NO_THROW(fubuki_validate(fubuki::validate_by::throw_call_info, VK_SUCCESS)) << "Failed for VK_SUCCESS";
+}
+
+} // anonymous namespace

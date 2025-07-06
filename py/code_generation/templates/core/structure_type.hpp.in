@@ -1,0 +1,80 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_STRUCTURE_TYPE_HPP
+#define FUBUKI_CORE_STRUCTURE_TYPE_HPP
+
+#include <concepts>
+#include <type_traits>
+
+#include "core/vulkan.hpp"
+
+// clang-format off
+
+namespace fubuki
+{
+
+/// Maps between a Vulkan structure and the matching VkStructureType.
+template<typename T, typename dummy = VkStructureType>
+requires(std::is_same_v<dummy, VkStructureType>)
+struct structure_type
+{
+    static constexpr bool valid = false;
+    static constexpr dummy value = dummy::VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO; // Invalid value for generic instantiation
+};
+
+/// A valid Vulkan structure.
+template<typename T>
+concept vk_struct = structure_type<std::decay_t<T>>::valid and structure_type<std::decay_t<T>>::value != VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO;
+
+/// Returns the VkStructureType associated to the template parameter, or fails compilation if it does not exists.
+template<vk_struct T>
+inline constexpr VkStructureType structure_type_v = structure_type<std::decay_t<T>>::value;
+
+#if defined(FUBUKI_MAKE_STRUCTURE_TYPE)
+#error Internal error. Should not be defined.
+#endif
+
+#define FUBUKI_MAKE_STRUCTURE_TYPE(vk_struct, vk_enum)                          \
+template<typename dummy>                                                        \
+requires requires{{dummy::vk_enum};} and std::is_same_v<dummy, VkStructureType> \
+struct structure_type<vk_struct, dummy>                                         \
+{                                                                               \
+    static constexpr bool valid = true;                                         \
+    static constexpr dummy value = dummy::vk_enum;                              \
+}
+
+//------------------------------------------------------------------------------
+@GENERATED_CODE@
+//------------------------------------------------------------------------------
+
+#undef FUBUKI_MAKE_STRUCTURE_TYPE
+
+/// Creates a Vulkan structure and sets its sType and pNext members to the correct values.
+template<vk_struct T>
+[[nodiscard]]
+inline constexpr auto make() noexcept
+{
+    T result = {};
+
+    if constexpr(requires{{result.sType} -> std::same_as<VkStructureType&>;})
+    {
+        result.sType = structure_type_v<T>;
+    }
+
+    if constexpr(requires{{result.pNext};})
+    {
+        result.pNext = nullptr;
+    }
+
+    return result;
+}
+
+} // namespace fubuki
+
+// clang-format on
+
+#endif // FUBUKI_CORE_STRUCTURE_TYPE_HPP

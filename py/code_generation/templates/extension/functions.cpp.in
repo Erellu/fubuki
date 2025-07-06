@@ -1,0 +1,12 @@
+
+#include "extension/functions/@SHORT_NAME@.hpp"
+
+#include <core/assertion.hpp>
+#include <core/pfn.hpp>
+
+namespace fubuki::extension::functions
+{
+
+@LOAD@
+
+} // namespace fubuki::extension::functions

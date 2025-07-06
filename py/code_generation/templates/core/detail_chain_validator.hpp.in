@@ -1,0 +1,31 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_DETAIL_CHAIN_VALIDATOR_@FUBUKI_STRUCT_NAME_UPPER@_HPP
+#define FUBUKI_CORE_DETAIL_CHAIN_VALIDATOR_@FUBUKI_STRUCT_NAME_UPPER@_HPP
+
+#include "core/vulkan.hpp" // IWYU pragma: keep
+
+namespace fubuki::detail::pnext_chain
+{
+
+template<typename base_type, typename structure_type>
+struct chain_validator;
+
+#if defined(@STRUCT_PROVIDER@)
+
+template<typename structure_type>
+struct chain_validator<@VK_STRUCT_NAME@, structure_type>
+{
+    static constexpr bool allowed = false;
+    static constexpr bool unique  = true;
+};
+@GENERATED_CODE@
+#endif // #if defined(@STRUCT_PROVIDER@)
+
+} // namespace fubuki::detail::pnext_chain
+
+#endif // FUBUKI_CORE_DETAIL_CHAIN_VALIDATOR_@FUBUKI_STRUCT_NAME_UPPER@_HPP

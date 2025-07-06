@@ -1,0 +1,89 @@
+# fubuki::extension
+
+> [!IMPORTANT]
+> This file is _not_ a substitue for the in-code documentation.
+> Its goal is to advertise the features available through `fubuki::extension`.
+> For examples and detailed documentation, see the `doxygen`.
+
+## CMake
+
+### Externally
+
+```cmake
+target_link_libraries(your_target <PUBLIC|PRIVATE> fubuki::extension)
+```
+
+### Internally
+
+```cmake
+fubuki_add_library(NAME                 target_name
+                   PUBLIC_DEPENDENCIES  "extension"
+                   PRIVATE_DEPENDENCIES "..."
+                   HEADERS              "..."
+                   SOURCES              "..."
+                   PUBLIC_LINK          "..."
+                   PRIVATE_LINK         "..."
+                   SYSTEM_PUBLIC_LINK   "..." 
+                   SYSTEM_PRIVATE_LINK  "..."
+                  )
+```
+
+## Nomenclature
+
+| Name                 | Type                     | Category                       | Description    | Notes                  |
+| -------------------- | ------------------------ | ------------------------------ | -------------- | ---------------------- |
+| Name of the facility | Type, in the C++ meaning | What this facility relates to. | What this does | Additional information |
+
+## Overview
+
+`fubuki::extension` is an interface library meant to simplify the access to features exposed through Vulkan extensions.
+
+## Public API
+
+For all extensions, the following facilities are generated:
+
+- `fubuki::extension::functions::`**`<extension_lower_case_name>`** (without the `vk` prefix to the extension name)
+    - **Examples**:
+        - `VK_KHR_swapchain_mutable_format` -> `fubuki::extension::functions::khr_swapchain_mutable_format`
+        - `VK_FUCHSIA_buffer_collection` -> `fubuki::extension::functions::fuchsia_buffer_collection`
+        - `VK_EXT_debug_utils` -> `fubuki::extension::functions::ext_debug_utils`
+        - etc.
+- Associated `fubuki::extension::`**`<extension_lower_case_name>`**`::load`
+- Associated `fubuki::get_from` traits (enabling `fubuki::get_from<"vkFunctionName">(...)`)
+- Free functions with reduced names (the corresponding Vulkan function is documented).
+    - **Examples**:
+        - `vkCreateSwapchainKHR` becomes `khr_swapchain::create`
+        - `vkAcquireNextImageKHR` becomes `khr_swapchain::images`
+        - etc.
+    - Overloads accepting `std::span` and `std::initialiazer_list` are added when relevant.
+    - **Note:** all these functions use Fubuki's handles.
+- An entry is added to `extension::device_functions` or `extension::instance_function`.
+- Associated `fubuki::get_from` traits for  `extension::device_functions` or `extension::instance_function`.
+
+> [!TIP]
+> Some extensions benefit from special treatment and get additional quality-of-life features beyond free-functions. For example:
+> - `ext_debug_utils` (`VK_EXT_debug_utils`) gets RAII objects for labels, traits for handle names, ...
+> - `khr_swapchain` (`VK_KHR_swapchain`) gets `presentation::success`, `presentation::error`, and `presentation::result` that diminish the range of codes to check upon submission. 
+> - etc.
+> For more information about these extra features, refer to the doxygen documentation.
+
+### Loading
+
+| Name                     | Type          | Category  | Description                                                                                            | Notes                                                                      |
+| ------------------------ | ------------- | --------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `load`                   | Free function | Extension | Loads an extension for an instance of `extension::device_functions` or `extension::instance_functions` | An overload exists for device extensions, and one for instance extensions. |
+| `<extension name>::load` | Free function | Extension | Loads the function pointers for an extension                                                           | N.A.                                                                       |
+
+## Supported extension
+
+Below follows the list of the extensions currently supported by Fubuki.
+For all extensions below, Fubuki provides a mechanism for automatic loading of function pointers and a C++-ish interface.
+
+> [!NOTE]
+> Support for `VkSurface`-related facilities is provided through `VK_KHR_surface`. There is no separate mechanism per-platform.
+
+### Instance
+@INSTANCE_EXTENSIONS@
+
+### Device
+@DEVICE_EXTENSIONS@

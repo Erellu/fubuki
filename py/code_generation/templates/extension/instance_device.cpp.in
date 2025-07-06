@@ -1,0 +1,54 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include "extension/functions/@LEVEL@_ext.hpp"
+#include <core/vulkan.hpp>
+#include <functional>
+#include <unordered_map>
+#include <unordered_set> // IWYU pragma: keep (Needed in instance, but not in device. However, it's simpler to generate both with the same template)
+
+namespace fubuki::extension
+{
+
+#if defined(FUBUKI_MAKE_LOADER)
+    #error "Internal error. Must not be defined."
+#endif
+
+@MAKE_LOADER@
+
+// Avoid the inlining of these functions, they make object code grow by A LOT
+@STRUCT_NAME@::@STRUCT_NAME@()                                    = default;
+@STRUCT_NAME@::~@STRUCT_NAME@()                                   = default;
+@STRUCT_NAME@::@STRUCT_NAME@(@STRUCT_NAME@&&) noexcept            = default;
+@STRUCT_NAME@& @STRUCT_NAME@::operator=(@STRUCT_NAME@&&) noexcept = default;
+
+//------------------------------------------------------------------------------
+
+[[nodiscard]]
+bool load(@STRUCT_NAME@& functions, @LOAD_FUNCTION_ARGS@, std::string_view extension)
+{
+    using loader = @LOADER_TYPE@;
+    @PRE_LOADER@
+    // clang-format off
+    static const std::unordered_map<std::string_view, loader> supported_extensions
+    {
+@LOADERS@
+    };
+    // clang-format on
+
+    if(const auto it = supported_extensions.find(extension); it != supported_extensions.end())
+    {
+        const auto& ext_loader = it->second;
+        ext_loader(@LOADER_ARGUMENTS@);
+        return true;
+    }
+
+    return false;
+}
+
+#undef FUBUKI_MAKE_LOADER
+
+} // namespace fubuki::extension

@@ -1,0 +1,81 @@
+
+#ifndef FUBUKI_CORE_FUNCTIONS@LEVEL_UPPER@_HPP
+#define FUBUKI_CORE_FUNCTIONS@LEVEL_UPPER@_HPP
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+ 
+#include "core/config/macros.hpp"
+#include "core/detail/pfn.hpp"
+#include "core/handle.hpp"
+#include "core/version_number.hpp"
+#include "core/vulkan.hpp"
+
+namespace fubuki
+{
+
+struct @STRUCT_NAME@
+{
+    @TYPES@
+    @MEMBERS@
+};
+
+[[nodiscard]] FUBUKI_CORE_API @STRUCT_NAME@ load(@LOAD_FUNCTION_ARGS@) noexcept;
+
+namespace detail
+{
+
+template<typename functions_type, fubuki::detail::vk_function_hash pfn>
+struct get_from;
+
+/// An helper struct to retrieve the correct member of a @STRUCT_NAME@ struct knowing its name in Vulkan.
+template<fubuki::detail::vk_function_hash pfn>
+struct get_from<@STRUCT_NAME@, pfn>
+{
+    static constexpr auto valid = false;
+
+    [[nodiscard]] constexpr static std::nullptr_t get(const @STRUCT_NAME@&) noexcept
+    {
+        return nullptr; // Invalid generic specialisation to trigger a compile error
+    }
+};
+
+#if defined(FUBUKI_MAKE_GET_FROM)
+    #error Internal error. Should not be defined.
+#endif
+
+#define FUBUKI_MAKE_GET_FROM(vk_function_name, version_struct, fubuki_name)                               \
+    template<>                                                                                            \
+    struct get_from<@STRUCT_NAME@, #vk_function_name>                                                     \
+    {                                                                                                     \
+                                                                                                          \
+        static constexpr bool valid = true;                                                               \
+        [[nodiscard]] constexpr static auto* get(const @STRUCT_NAME@& functions) noexcept                        \
+        {                                                                                                 \
+            static_assert(                                                                                \
+                requires {                                                                                \
+                    { functions.version_struct.fubuki_name };                                             \
+                }, "Internal error. Bad name or version structure.");                                     \
+                                                                                                          \
+            auto pfn = functions.version_struct.fubuki_name;                                              \
+                                                                                                          \
+            using expected_pfn_type = PFN_##vk_function_name;                                             \
+            using pfn_type          = std::decay_t<decltype(pfn)>;                                        \
+                                                                                                          \
+            static_assert(std::is_same_v<pfn_type, expected_pfn_type>, "Internal error. Type mismatch."); \
+                                                                                                          \
+            return pfn;                                                                                   \
+        }                                                                                                 \
+    }
+
+@GET_FROM@
+
+#undef FUBUKI_MAKE_GET_FROM
+
+} // namespace detail
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_FUNCTIONS@LEVEL_UPPER@_HPP

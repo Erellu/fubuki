@@ -1,0 +1,22 @@
+
+#include "extension/@SHORT_NAME@.hpp"
+
+#include <core/invoke.hpp>
+
+namespace fubuki::extension::@SHORT_NAME@
+{
+
+#if defined(@EXTENSION_NAME@)
+@FREE_FUNCTIONS@
+#endif // defined(@EXTENSION_NAME@)
+
+namespace cmd
+{
+
+#if defined(@EXTENSION_NAME@)
+@FREE_COMMANDS@
+#endif // defined(@EXTENSION_NAME@)
+
+} // namespace cmd
+
+} // namespace fubuki::extension::@SHORT_NAME@

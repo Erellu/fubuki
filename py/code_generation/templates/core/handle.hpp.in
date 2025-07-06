@@ -1,0 +1,97 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_HANDLE_HPP
+#define FUBUKI_CORE_HANDLE_HPP
+
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+
+#include "core/compile_time_hash.hpp"
+#include "core/detail/manual_handle.hpp"
+#include "core/detail/null_handle.hpp"
+#include "core/vulkan.hpp"
+
+namespace fubuki
+{
+
+template<std::uint64_t hash, typename T>
+struct handle;
+
+#define FUBUKI_MAKE_HANDLE(vk_handle, type_name)                                                       \
+    template<>                                                                                         \
+    struct handle<compile_time_hash(#vk_handle), vk_handle>                                            \
+    {                                                                                                  \
+        static constexpr auto name      = #vk_handle;                                                  \
+        static constexpr auto name_hash = compile_time_hash(#vk_handle);                               \
+        using underlying_type           = vk_handle;                                                   \
+        using self_type                 = handle<name_hash, underlying_type>;                          \
+                                                                                                       \
+        constexpr explicit handle(underlying_type h) noexcept : vk{h} {}                               \
+        constexpr handle(detail::null_handle_type = {}) noexcept {}                                    \
+                                                                                                       \
+        underlying_type vk = {};                                                                       \
+                                                                                                       \
+        constexpr auto& operator=(detail::null_handle_type) noexcept                                   \
+        {                                                                                              \
+            vk = {};                                                                                   \
+            return *this;                                                                              \
+        }                                                                                              \
+                                                                                                       \
+        [[nodiscard]]                                                                                  \
+        friend constexpr bool operator==(const self_type& h, const detail::null_handle_type&) noexcept \
+        {                                                                                              \
+            return h.vk == self_type::underlying_type{};                                               \
+        }                                                                                              \
+                                                                                                       \
+        [[nodiscard]]                                                                                  \
+        friend constexpr bool operator==(const detail::null_handle_type&, const self_type& h) noexcept \
+        {                                                                                              \
+            return h.vk == self_type::underlying_type{};                                               \
+        }                                                                                              \
+                                                                                                       \
+        [[nodiscard]]                                                                                  \
+        friend constexpr bool operator!=(const self_type& h, const detail::null_handle_type&) noexcept \
+        {                                                                                              \
+            return not(h == null_handle);                                                              \
+        }                                                                                              \
+                                                                                                       \
+        [[nodiscard]]                                                                                  \
+        friend constexpr bool operator!=(const detail::null_handle_type&, const self_type& h) noexcept \
+        {                                                                                              \
+            return not(h == null_handle);                                                              \
+        }                                                                                              \
+                                                                                                       \
+        [[nodiscard]] friend constexpr auto operator<=>(const self_type&, const self_type&) = default; \
+        [[nodiscard]] friend constexpr bool operator==(const self_type&, const self_type&)  = default; \
+        [[nodiscard]] friend constexpr bool operator!=(const self_type&, const self_type&)  = default; \
+    };                                                                                                 \
+                                                                                                       \
+    using type_name##_handle = handle<compile_time_hash(#vk_handle), vk_handle>
+
+//------------------------------------------------------------------------------
+// clang-format off
+@GENERATED_CODE@
+// clang-format on
+//------------------------------------------------------------------------------
+
+} // namespace fubuki
+
+#undef FUBUKI_MAKE_HANDLE
+
+namespace std
+{
+
+template<std::uint64_t h, typename T>
+struct hash<fubuki::handle<h, T>>
+{
+    [[nodiscard]] auto operator()(const fubuki::handle<h, T>& v) const noexcept { return std::hash<T>{}(v.vk); }
+};
+
+} // namespace std
+
+#endif // FUBUKI_CORE_HANDLE_HPP

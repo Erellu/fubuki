@@ -1,0 +1,32 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include <gtest/gtest.h>
+
+#include <core/enums.hpp>
+
+#define STATIC_EXPECT_TRUE(x) \
+    static_assert((x));       \
+    EXPECT_TRUE((x))
+
+namespace
+{
+
+// clang-format off
+TEST(enums, to_string_view)
+{
+@TO_STRING_VIEW@
+}
+
+TEST(enums, to_string)
+{
+@TO_STRING@
+}
+// clang-format on
+
+} // anonymous namespace
+
+#undef STATIC_EXPECT_TRUE

@@ -1,0 +1,43 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include "core/assertion.hpp"
+#include "core/pfn.hpp"
+#include "core/functions/@LEVEL@_core.hpp"
+#include "core/vulkan.hpp"
+
+// Extracted from vulkan_core.h (Apache 2.0)
+// Allows to compile with VK_NO_PROTOTYPES
+extern "C"
+{
+
+// NOLINTBEGIN(readability-identifier-naming)
+extern VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCreateInfo*  pCreateInfo,
+                                                       const VkAllocationCallbacks* pAllocator,
+                                                       VkInstance*                  pInstance);
+
+extern VKAPI_ATTR void VKAPI_CALL vkDestroyInstance(VkInstance instance, const VkAllocationCallbacks* pAllocator);
+
+extern VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char*            pLayerName,
+                                                                             ::uint32_t*            pPropertyCount,
+                                                                             VkExtensionProperties* pProperties);
+
+extern VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(::uint32_t* pPropertyCount, VkLayerProperties* pProperties);
+
+extern VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(::uint32_t* pApiVersion);
+
+} // extern "C"
+// NOLINTEND(readability-identifier-naming)
+
+namespace fubuki
+{
+
+[[nodiscard]] @STRUCT_NAME@ load(@LOAD_FUNCTION_ARGS@) noexcept
+{
+@LOAD_FUNCTION_BODY@
+}
+
+} // namespace fubuki

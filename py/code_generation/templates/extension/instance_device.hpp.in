@@ -1,0 +1,89 @@
+
+#ifndef FUBUKI_EXTENSION_FUNCTIONS_@LEVEL_UPPER@_HPP
+#define FUBUKI_EXTENSION_FUNCTIONS_@LEVEL_UPPER@_HPP
+
+#include <memory>
+#include <string_view>
+
+#include <core/assertion.hpp>
+#include <core/config/macros.hpp>
+#include <core/handle.hpp>
+#include <core/version_number.hpp>
+#include <core/vulkan.hpp>
+
+@INCLUDES@
+
+//------------------------------------------------------------------------------
+// Macros
+
+
+//------------------------------------------------------------------------------
+
+namespace fubuki
+{
+
+namespace extension
+{
+
+#if defined(FUBUKI_DECLARE_EXT)
+    #error "FUBUKI_DECLARE_EXT is already defined."
+#endif
+
+#define FUBUKI_DECLARE_EXT(name)                                                                                 \
+                                                                                                                 \
+    std::unique_ptr<extension::functions::name> name;                                                            \
+                                                                                                                 \
+    [[nodiscard]] constexpr operator const extension::functions::name*() const noexcept { return (name).get(); } \
+    [[nodiscard]] constexpr operator const extension::functions::name&() const noexcept                          \
+    {                                                                                                            \
+        fubuki_assert((name) != nullptr, "Extension not loaded");                                                \
+        return *(name);                                                                                          \
+    }
+
+struct @STRUCT_NAME@
+{
+
+@MEMBERS@
+
+    FUBUKI_EXTENSION_API
+    @STRUCT_NAME@();
+
+    FUBUKI_EXTENSION_API
+    @STRUCT_NAME@(@STRUCT_NAME@&&) noexcept;
+
+    FUBUKI_EXTENSION_API
+    @STRUCT_NAME@& operator=(@STRUCT_NAME@&&) noexcept;
+
+    FUBUKI_EXTENSION_API
+    ~@STRUCT_NAME@();
+    
+    @STRUCT_NAME@(const @STRUCT_NAME@&)            = delete;
+    @STRUCT_NAME@& operator=(const @STRUCT_NAME@&) = delete;
+};
+
+#undef FUBUKI_DECLARE_EXT
+
+//------------------------------------------------------------------------------
+
+/// Loads an extension functions, if Fubuki supports it.
+/// @returns A boolean indicating if the operation succeeded.
+[[nodiscard]] FUBUKI_EXTENSION_API
+bool load(@STRUCT_NAME@& functions, @LOAD_FUNCTION_ARGS@, std::string_view extension);
+
+} // namespace extension
+
+using @LEVEL@_ext_functions = extension::@STRUCT_NAME@;
+
+namespace detail
+{
+
+template<typename functions_type, fubuki::detail::vk_function_hash pfn>
+struct get_from;
+
+@GET_FROM@
+
+} // namespace detail
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_FUNCTIONS_@LEVEL_UPPER@_EXTENSIONS_HPP

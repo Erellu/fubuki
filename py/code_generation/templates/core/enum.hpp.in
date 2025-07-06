@@ -1,0 +1,50 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_ENUM_@FUBUKI_ENUM_NAME_UPPER@_HPP
+#define FUBUKI_CORE_ENUM_@FUBUKI_ENUM_NAME_UPPER@_HPP
+
+#include <string>
+#include <string_view>
+
+#include "core/vulkan.hpp"
+
+namespace fubuki
+{
+
+// clang-format off
+#if defined(@ENUM_PROVIDER@)
+
+/// Returns a std::string_view corresponding to a @VK_ENUM_NAME@.
+[[nodiscard]] inline constexpr std::string_view to_string_view(const @VK_ENUM_NAME@ e) noexcept
+{
+    #if defined(FUBUKI_MAKE_CASE)
+        #error Internal error. Should not be defined.
+    #endif
+
+    #define FUBUKI_MAKE_CASE(enum_value) \
+        case enum_value: return #enum_value
+
+    switch(e)
+    {
+@GENERATED_CODE@
+        default: return "";
+    }
+
+    #undef FUBUKI_MAKE_CASE
+}
+
+/// Returns a std::string corresponding to a @VK_ENUM_NAME@.
+@DISABLE@[[nodiscard]] inline auto to_string(@VK_ENUM_NAME@ e) { return std::string{to_string_view(e)}; }
+
+//------------------------------------------------------------------------------
+
+#endif // #if defined(@ENUM_PROVIDER@)
+// clang-format on
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_ENUM_@FUBUKI_ENUM_NAME_UPPER@_HPP

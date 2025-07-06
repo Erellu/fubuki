@@ -1,0 +1,144 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_DETAIL_HANDLE_TRAITS_HPP
+#define FUBUKI_CORE_DETAIL_HANDLE_TRAITS_HPP
+
+#include "core/handle.hpp"
+#include "core/string_literal.hpp"
+#include "core/vulkan.hpp"
+
+namespace fubuki::detail
+{
+
+template<typename handle_type>
+struct handle_traits
+{
+    // Generic invalid values for concept declaration
+    using parent          = void; ///< Parent of the handle.
+    using handle          = void; ///< Type of the handle itself.
+    using underlying_type = void; ///< Type of the underlying Vulkan handle.
+    using vk_info         = void; ///< Type of the structure type to create/allocate a handle of this type.
+    using pfn_create      = void; ///< Type of the function pointer to create/allocate a handle of this type.
+    using pfn_destroy     = void; ///< Type of the function pointer to destroy/free a handle of this type.
+
+    static constexpr auto pfn_create_name  = ""_literal; ///< Name of the function pointer to retrieve, as a raw string literal.
+    static constexpr auto pfn_destroy_name = ""_literal; ///< Name of the function pointer to retrieve, as a raw string literal.
+};
+
+template<typename handle_type>
+concept creatable_handle = not std::is_same_v<typename handle_traits<handle_type>::handle, void>
+    and not std::is_same_v<typename handle_traits<handle_type>::underlying_type, void>
+    and not std::is_same_v<typename handle_traits<handle_type>::vk_info, void>
+    and not std::is_same_v<typename handle_traits<handle_type>::pfn_create, void>
+    and not std::is_same_v<typename handle_traits<handle_type>::pfn_destroy, void>;
+
+template<typename T>
+struct is_handle;
+
+template<typename T>
+struct is_handle : std::false_type
+{
+};
+
+template<std::uint64_t hash, typename T>
+struct is_handle<fubuki::handle<hash, T>> : std::true_type
+{
+};
+
+template<typename T>
+inline constexpr bool is_handle_v = is_handle<T>::value;
+
+//------------------------------------------------------------------------------
+// Generated code
+@GENERATED_CODE@
+//------------------------------------------------------------------------------
+// Manual traits
+
+#if defined(VK_VERSION_1_0)
+    template<>
+    struct handle_traits<device_memory_handle>
+{
+    using handle          = device_memory_handle;
+    using parent          = device_handle;
+    using underlying_type = typename handle::underlying_type;
+    using vk_info         = VkMemoryAllocateInfo;
+    using pfn_create      = PFN_vkAllocateMemory;
+    using pfn_destroy     = PFN_vkFreeMemory;
+
+    static constexpr auto pfn_create_name  = "vkAllocateMemory"_literal;
+    static constexpr auto pfn_destroy_name = "vkFreeMemory"_literal;
+};
+#endif // #if defined(VK_VERSION_1_0)
+
+#if defined(VK_VERSION_1_0)
+    template<>
+    struct handle_traits<graphics_pipeline_handle>
+{
+    using parent          = device_handle;
+    using handle          = graphics_pipeline_handle;
+    using underlying_type = typename handle::underlying_type;
+    using vk_info         = VkGraphicsPipelineCreateInfo;
+    using pfn_create      = PFN_vkCreateGraphicsPipelines;
+    using pfn_destroy     = PFN_vkDestroyPipeline;
+
+    static constexpr auto pfn_create_name  = "vkCreateGraphicsPipelines"_literal;
+    static constexpr auto pfn_destroy_name = "vkDestroyPipeline"_literal;
+};
+#endif // #if defined(VK_VERSION_1_0)
+
+#if defined(VK_VERSION_1_0)
+template<>
+struct handle_traits<compute_pipeline_handle>
+{
+    using parent          = device_handle;
+    using handle          = compute_pipeline_handle;
+    using underlying_type = typename handle::underlying_type;
+    using vk_info         = VkComputePipelineCreateInfo;
+    using pfn_create      = PFN_vkCreateComputePipelines;
+    using pfn_destroy     = PFN_vkDestroyPipeline;
+
+    static constexpr auto pfn_create_name  = "vkCreateComputePipelines"_literal;
+    static constexpr auto pfn_destroy_name = "vkDestroyPipeline"_literal;
+};
+#endif // #if defined(VK_VERSION_1_0)
+
+#if defined(VK_KHR_ray_tracing_pipeline)
+template<>
+struct handle_traits<ray_tracing_pipeline_khr_handle>
+{
+    using parent          = device_handle;
+    using handle          = ray_tracing_pipeline_khr_handle;
+    using underlying_type = typename handle::underlying_type;
+    using vk_info         = VkRayTracingPipelineCreateInfoKHR;
+    using pfn_create      = PFN_vkCreateRayTracingPipelinesKHR;
+    using pfn_destroy     = PFN_vkDestroyPipeline;
+
+    static constexpr auto pfn_create_name  = "vkCreateRayTracingPipelinesKHR"_literal;
+    static constexpr auto pfn_destroy_name = "vkDestroyPipeline"_literal;
+};
+
+#endif // #if defined(VK_KHR_ray_tracing_pipeline)
+
+#if defined(VK_NV_ray_tracing)
+template<>
+struct handle_traits<ray_tracing_pipeline_nv_handle>
+{
+    using parent          = device_handle;
+    using handle          = ray_tracing_pipeline_nv_handle;
+    using underlying_type = typename handle::underlying_type;
+    using vk_info         = VkRayTracingPipelineCreateInfoNV;
+    using pfn_create      = PFN_vkCreateRayTracingPipelinesNV;
+    using pfn_destroy     = PFN_vkDestroyPipeline;
+
+    static constexpr auto pfn_create_name  = "vkCreateRayTracingPipelinesNV"_literal;
+    static constexpr auto pfn_destroy_name = "vkDestroyPipeline"_literal;
+};
+#endif // #if defined(VK_NV_ray_tracing)
+
+} // namespace fubuki::detail
+
+#endif // FUBUKI_CORE_DETAIL_HANDLE_TRAITS_HPP

@@ -1,0 +1,31 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#include <gtest/gtest.h>
+
+#include <core/pnext_chain.hpp>
+
+#define STATIC_EXPECT_TRUE(x) \
+    static_assert((x));       \
+    EXPECT_TRUE((x))
+#define STATIC_EXPECT_FALSE(x) \
+    static_assert(not(x));     \
+    EXPECT_FALSE((x))
+
+// clang-format off
+namespace
+{
+
+using fubuki::detail::pnext_chain::can_extend_v;
+using fubuki::detail::pnext_chain::chain_compatible;
+
+@GENERATED_CODE@
+#undef STATIC_EXPECT_TRUE
+#undef STATIC_EXPECT_FALSE
+
+} // anonymous namespace
+// clang-format on
+

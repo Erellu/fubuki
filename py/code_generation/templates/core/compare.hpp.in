@@ -1,0 +1,86 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_COMPARE_@FUBUKI_NAME_UPPER@_HPP
+#define FUBUKI_CORE_COMPARE_@FUBUKI_NAME_UPPER@_HPP
+
+#include "core/detail/compare.hpp" // IWYU pragma: keep
+
+@DEPENDENCIES@
+
+#include "core/vulkan.hpp" // IWYU pragma: keep
+
+namespace fubuki
+{
+
+#if defined(@PROVENANCE@)@ALIAS@
+
+[[nodiscard]] inline constexpr bool operator==(const @NAME@& a, const @NAME@& b) noexcept
+{
+    using detail::compare::equal;
+    return @EQUAL_BODY@;
+}
+
+[[nodiscard]] inline constexpr bool operator!=(const @NAME@& a, const @NAME@& b) noexcept{return not(a == b);}
+
+@DISABLE_THREE_WAY_BEGIN@
+[[nodiscard]] inline constexpr auto operator<=>(const @NAME@& a, const @NAME@& b) noexcept
+{
+    using result_type = detail::compare::three_way_result_t<decltype(a.@FIRST_MEMBER@)>;
+    using detail::compare::three_way;
+    using detail::compare::to_ordering;
+
+@THREE_WAY_BODY@
+
+    return result_type::equivalent;
+}
+@DISABLE_THREE_WAY_END@
+
+namespace detail::compare
+{
+
+template<>
+[[nodiscard]]
+inline constexpr bool equal(const @NAME@& a, const @NAME@& b) noexcept{ return a == b;};
+
+// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+template<std::size_t N>
+[[nodiscard]]
+inline constexpr bool equal(const @NAME@ (&a) [N], const @NAME@ (&b)[N]) noexcept
+{
+    return std::ranges::equal(a, b, [](const @NAME@& x, const @NAME@& y) constexpr noexcept{return x == y;});
+};
+// NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+
+@DISABLE_THREE_WAY_BEGIN@
+
+template<>
+struct three_way_result<@NAME@>
+{
+    using type = decltype(@NAME@{} <=> @NAME@{});
+};
+
+template<>
+inline constexpr std::int32_t three_way(const @NAME@& a, const @NAME@& b) noexcept{ return to_int(a <=> b);};
+
+// NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+template<std::size_t N>
+[[nodiscard]]
+inline constexpr std::int32_t three_way(const @NAME@ (&a) [N], const @NAME@ (&b)[N]) noexcept
+{
+    return to_int(lexicographical_compare_three_way(a, b, [](const @NAME@& x, const @NAME@& y) constexpr noexcept{return x <=> y;}));
+};
+// NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+
+@DISABLE_THREE_WAY_END@
+
+} // namespace detail::compare
+
+#endif // if defined(@PROVENANCE@)@ALIAS@
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_COMPARE_@FUBUKI_NAME_UPPER@_HPP

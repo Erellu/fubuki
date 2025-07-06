@@ -1,0 +1,29 @@
+
+#ifndef FUBUKI_EXTENSION_@EXTENSION_NAME_UPPER@_HPP
+#define FUBUKI_EXTENSION_@EXTENSION_NAME_UPPER@_HPP
+
+#include <core/config/macros.hpp>
+#include <core/handle.hpp>
+#include <core/vulkan.hpp>
+
+#include "extension/functions/@SHORT_NAME@.hpp" // IWYU pragma: export
+
+namespace fubuki::extension::@SHORT_NAME@
+{
+
+#if defined(@EXTENSION_NAME@)
+@FREE_FUNCTIONS@
+#endif // defined(@EXTENSION_NAME@)
+
+namespace cmd
+{
+
+#if defined(@EXTENSION_NAME@)
+@FREE_COMMANDS@
+#endif // defined(@EXTENSION_NAME@)
+
+} // namespace cmd
+
+} // namespace fubuki::extension::@SHORT_NAME@
+
+#endif // FUBUKI_EXTENSION_@EXTENSION_NAME_UPPER@_HPP

@@ -1,0 +1,130 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_DETAIL_PNEXT_CHAIN_HPP
+#define FUBUKI_CORE_DETAIL_PNEXT_CHAIN_HPP
+
+// IWYU pragma: begin_exports
+
+@GENERATED_CODE@
+
+// IWYU pragma: end_exports
+
+#include <core/traits/parameter_pack.hpp>
+#include <core/traits/tuple.hpp>
+
+namespace fubuki::detail::pnext_chain
+{
+
+template<typename base_type, typename structure_type>
+struct chain_validator;
+
+template<typename base_type, typename structure_type>
+struct chain_validator
+{
+    static constexpr bool allowed = false;
+    static constexpr bool unique  = true;
+};
+
+template<typename base_type, typename structure_type>
+inline constexpr bool allowed_v = chain_validator<base_type, structure_type>::allowed;
+
+template<typename base_type, typename structure_type>
+inline constexpr bool unique_v = chain_validator<base_type, structure_type>::unique;
+
+template<typename structure_type>
+struct chain_compatibility;
+
+template<typename structure_type>
+struct chain_compatibility
+{
+    using type    = structure_type;
+    using parents = std::tuple<>;
+};
+
+/// Indicates that two structures are compatible, that is, they have a possible common parent.
+template<typename struct_1, typename struct_2>
+concept chain_compatible = allowed_v<struct_1, struct_2>
+    or (std::tuple_size_v<fubuki::traits::tuple::intersection_t<typename chain_compatibility<struct_1>::parents,
+                                                                   typename chain_compatibility<struct_2>::parents>>)
+        > 0;
+
+template<typename base, typename element, typename... pnext_members>
+concept unique = not unique_v<base, std::decay_t<element>> or fubuki::traits::parameter_pack::count_v<element, pnext_members...> == 1u;
+
+/**
+ * Indicates if a pnext chain made of the indicated types can be used to extend a structure.
+ * @tparam base Type of the structure to extend
+ * @tparam pnext_members Types of the elements in the chain.
+ */
+template<typename base, typename... pnext_members>
+[[nodiscard]] constexpr bool can_extend() noexcept
+{
+    namespace traits = fubuki::traits;
+
+    // It's always valid to not extend a pNext chain
+    if constexpr(sizeof...(pnext_members) == 0)
+    {
+        return true;
+    }
+    else
+    {
+        constexpr bool all_compatible = (chain_compatible<base, std::decay_t<pnext_members>> and ...);
+
+        if constexpr(not all_compatible)
+        {
+            return false;
+        }
+        else
+        {
+            constexpr auto uniqueness = []<typename element>(chain_validator<base, element>) constexpr noexcept -> bool
+            {
+                // May be false when extending a structure that's not a direct base
+                constexpr bool direct = allowed_v<base, element>;
+
+                if constexpr(direct)
+                {
+                    return unique<base, element, pnext_members...>;
+                }
+                else
+                {
+                    using possible_parents = traits::tuple::intersection_t<base, element>;
+
+                    constexpr std::size_t possible_parent_count = std::tuple_size_v<possible_parents>;
+
+                    if constexpr(possible_parent_count == 0u)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        constexpr auto most_restrictive = []<std::size_t... indices>(std::index_sequence<indices...>) constexpr noexcept -> bool
+                        {
+                            constexpr auto impl = []<std::size_t index>(std::integral_constant<std::size_t, index>) constexpr noexcept -> bool
+                            {
+                                using parent_type = traits::parameter_pack::nth_type<index, pnext_members...>;
+                                return unique<parent_type, element, pnext_members...>;
+                            };
+
+                            return (impl(std::integral_constant<std::size_t, indices>{}) and ...);
+                        };
+
+                        return most_restrictive(std::make_index_sequence<possible_parent_count>{});
+                    }
+                }
+            };
+
+            return (uniqueness(chain_validator<base, pnext_members>{}) and ...);
+        }
+    }
+}
+
+template<typename base, typename... pnext_members>
+inline constexpr bool can_extend_v = can_extend<base, pnext_members...>();
+
+} // namespace fubuki::detail::pnext_chain
+
+#endif // FUBUKI_CORE_DETAIL_PNEXT_CHAIN_HPP

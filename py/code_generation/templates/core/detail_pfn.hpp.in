@@ -1,0 +1,71 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_DETAIL_PFN_HPP
+#define FUBUKI_CORE_DETAIL_PFN_HPP
+
+#include "core/compile_time_hash.hpp"
+#include "core/vulkan.hpp"
+
+namespace fubuki::detail
+{
+
+//------------------------------------------------------------------------------
+
+/// Mock to allow pfn<"vkStuff"> syntax.
+struct vk_function_hash
+{
+    consteval vk_function_hash(const string_literal str)
+        : hash{compile_time_hash({str})}
+    {}
+
+    // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+    template<std::size_t size>
+    consteval vk_function_hash(const char (&s)[size]) noexcept
+        : vk_function_hash{string_literal{s}}
+    {}
+    // NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+
+    friend consteval bool operator==(const vk_function_hash&, const vk_function_hash&)  = default;
+    friend consteval bool operator!=(const vk_function_hash&, const vk_function_hash&)  = default;
+    friend consteval auto operator<=>(const vk_function_hash&, const vk_function_hash&) = default;
+
+    std::size_t hash = 0;
+};
+
+//------------------------------------------------------------------------------
+// Generate traits for each PFN
+
+namespace traits
+{
+
+template<std::size_t hash>
+struct vk_function
+{
+    using type                        = void;
+    static inline constexpr auto name = ""_literal;
+};
+
+template<std::size_t hash>
+concept valid_pfn_name = not std::is_same_v<typename vk_function<hash>::type, void>;
+
+#if defined(FUBUKI_MAKE_PFN_TRAITS)
+    #error Internal error. Should not be defined.
+#endif
+
+//------------------------------------------------------------------------------
+// clang-format off
+@GENERATED_CODE@
+// clang-format on
+//------------------------------------------------------------------------------
+
+#undef FUBUKI_MAKE_PFN_TRAITS
+
+} // namespace traits
+
+} // namespace fubuki::detail
+
+#endif // FUBUKI_CORE_DETAIL_PFN_HPP

@@ -1,0 +1,72 @@
+
+/*
+ * WARNING : This file is GENERATED.
+ * Changes performed manually will be undone next generation.
+ */
+
+#ifndef FUBUKI_CORE_RESULT_HPP
+#define FUBUKI_CORE_RESULT_HPP
+
+#include <ostream>
+#include <string>
+#include <string_view>
+
+#include "core/vulkan.hpp"
+
+namespace fubuki
+{
+
+/// Returns a std::string_view corresponding to a VkResult.
+[[nodiscard]] inline constexpr std::string_view to_string_view(const VkResult r) noexcept
+{
+
+#if defined(FUBUKI_MAKE_CASE)
+    #error Internal error. Should not be defined.
+#endif
+
+#define FUBUKI_MAKE_CASE(vk_result) \
+    case vk_result: return #vk_result
+
+    switch(r)
+    {
+@GENERATED_CODE@
+        default: return "";
+    }
+
+#undef FUBUKI_MAKE_CASE
+
+}
+
+/// Returns a std::string corresponding to a VkResult.
+[[nodiscard]] inline auto to_string(VkResult r) { return std::string{to_string_view(r)}; }
+
+//------------------------------------------------------------------------------
+
+/// Vulkan result code.
+struct result
+{
+    VkResult code = VK_ERROR_UNKNOWN; ///< Result code.
+
+    /// Returns a human-readable string corresponding to the result.
+    [[nodiscard]] operator std::string() const { return to_string(code); }
+
+    /// Converts a result to a boolean. Converts to 'true' if, and only if the result is VK_SUCCESS.
+    [[nodiscard]] explicit constexpr operator bool() const noexcept { return code == VK_SUCCESS; }
+
+    /// Converts a result to the underlying Vulkan result code.
+    [[nodiscard]] constexpr operator VkResult() const noexcept { return code; }
+
+    /// Converts a result to a string_view representation of the Vulkan result code.
+    [[nodiscard]] constexpr operator std::string_view() const noexcept { return to_string_view(code); }
+
+    template<typename char_type, typename traits = std::char_traits<char_type>>
+    friend std::basic_ostream<char_type, traits>& operator<<(std::basic_ostream<char_type, traits>& out, const result& r) { return out << to_string_view(r.code); }
+
+    [[nodiscard]] friend constexpr auto operator<=>(const result&, const result&) = default;
+    [[nodiscard]] friend constexpr bool operator==(const result&, const result&)  = default;
+    [[nodiscard]] friend constexpr bool operator!=(const result&, const result&)  = default;
+};
+
+} // namespace fubuki
+
+#endif // FUBUKI_CORE_RESULT_HPP
