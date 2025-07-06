@@ -1,5 +1,7 @@
 # Fubuki
 
+[![Build status](https://github.com/Erellu/fubuki/actions/workflows/build.yml/badge.svg)](https://github.com/Erellu/fubuki/actions/workflows/build.yml)
+
 ## About
 
 _Idiomatic_ C++23 cross-platform composable abstraction framework for Vulkan and low-level graphics.
