@@ -65,6 +65,7 @@ All targets depend on `fubuki::core`, which itself only depends on the Standard 
 | `md_vector`              | `class`    | Container                       | A RAII wrapper around a C-array `T[][]...` (with the number of dimensions known at compile-time).          | **Avoid** unless you need a `T**`.                                |
 | `md_vector_view`         | `class`    | View                            | View of a `md_vector` or of the corresponding C storage type.                                              | N.A.                                                              |
 | `operator""_literal`     | `class`    | Helper                          | Constructs a string literal.                                                                               | N.A.                                                              |
+| `small_vector`           | `class`    | Container, contiguous container | `vector` with SBO (Small Buffer Optimisation).                                                             | Use as default container.                                         |
 | `string_literal`         | `class`    | Container, contiguous container | Ensures a raw C string parameter is from a string literal.                                                 | Use as default container for string literals.                     |
 
 ### Memory
