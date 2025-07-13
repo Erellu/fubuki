@@ -32,7 +32,8 @@
 #include <ostream>
 #include <string>
 
-#include <core/types.hpp>
+#include <core/dim.hpp>
+#include <core/pos.hpp>
 
 namespace fubuki::io::platform
 {

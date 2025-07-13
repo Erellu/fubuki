@@ -32,8 +32,6 @@
 #include <concepts>
 #include <ostream>
 
-#include <core/types.hpp>
-
 #include "io/platform/event/source.hpp"
 #include "io/platform/keyboard_key.hpp"
 
