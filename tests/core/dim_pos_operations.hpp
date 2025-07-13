@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSD 2-Clause License
  *
  * Copyright (c) 2025, Erwan DUHAMEL
@@ -26,20 +26,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FUBUKI_CORE_TEST_DIM_POS_OPERATIONS_HPP
+#define FUBUKI_CORE_TEST_DIM_POS_OPERATIONS_HPP
+
 #include <sstream>
+#include <type_traits>
 
 #include <gtest/gtest.h>
 
-#include <core/types.hpp>
+#include <core/dim.hpp>
+#include <core/pos.hpp>
 
-#define STATIC_EXPECT_TRUE(x) \
-    static_assert((x));       \
-    EXPECT_TRUE((x))
-#define STATIC_EXPECT_FALSE(x) \
-    static_assert(not(x));     \
-    EXPECT_FALSE((x))
-
-namespace
+namespace fubuki::test::dim_pos
 {
 
 enum class which
@@ -47,6 +45,13 @@ enum class which
     dim,
     pos
 };
+
+#define STATIC_EXPECT_TRUE(x) \
+    static_assert((x));       \
+    EXPECT_TRUE((x))
+#define STATIC_EXPECT_FALSE(x) \
+    static_assert(not(x));     \
+    EXPECT_FALSE((x))
 
 template<typename T, which type>
 void do_test()
@@ -161,39 +166,9 @@ void do_test()
     }
 }
 
-//------------------------------------------------------------------------------
-
-TEST(types, dim)
-{
-    using enum which;
-
-    do_test<std::uint8_t, dim>();
-    do_test<std::uint16_t, dim>();
-    do_test<std::uint32_t, dim>();
-    do_test<std::uint64_t, dim>();
-
-    do_test<std::int8_t, dim>();
-    do_test<std::int16_t, dim>();
-    do_test<std::int32_t, dim>();
-    do_test<std::int64_t, dim>();
-}
-
-TEST(types, pos)
-{
-    using enum which;
-
-    do_test<std::uint8_t, pos>();
-    do_test<std::uint16_t, pos>();
-    do_test<std::uint32_t, pos>();
-    do_test<std::uint64_t, pos>();
-
-    do_test<std::int8_t, pos>();
-    do_test<std::int16_t, pos>();
-    do_test<std::int32_t, pos>();
-    do_test<std::int64_t, pos>();
-}
-
 #undef STATIC_EXPECT_TRUE
 #undef STATIC_EXPECT_FALSE
 
-} // anonymous namespace
+} // namespace fubuki::test::dim_pos
+
+#endif // FUBUKI_CORE_TEST_DIM_POS_OPERATIONS_HPP

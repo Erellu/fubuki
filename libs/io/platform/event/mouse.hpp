@@ -33,7 +33,7 @@
 #include <cstdint>
 #include <ostream>
 
-#include <core/types.hpp>
+#include <core/pos.hpp>
 
 #include "io/platform/event/source.hpp"
 #include "io/platform/keyboard_key.hpp"

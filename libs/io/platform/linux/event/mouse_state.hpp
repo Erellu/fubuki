@@ -32,7 +32,7 @@
 #include <cstdint>
 #include <optional>
 
-#include <core/types.hpp>
+#include <core/pos.hpp>
 
 namespace fubuki::io::platform::linux_bsd
 {
