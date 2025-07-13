@@ -33,7 +33,8 @@
 #include <ostream>
 
 #include <core/config/macros.hpp>
-#include <core/types.hpp>
+#include <core/dim.hpp>
+#include <core/pos.hpp>
 
 #include "io/platform/event/source.hpp"
 

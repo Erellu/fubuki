@@ -26,23 +26,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FUBUKI_CORE_TYPES_HPP
-#define FUBUKI_CORE_TYPES_HPP
+#include "dim_pos_operations.hpp"
 
-#include "core/dim.hpp"       // IWYU pragma: export
-#include "core/pos.hpp"       // IWYU pragma: export
-#include "core/rectangle.hpp" // IWYU pragma: export
+#include <gtest/gtest.h>
 
-namespace fubuki::deprecated
+namespace
 {
 
-namespace [[deprecated("fubuki/core/types.hpp is deprecated. Use core/dim.hpp, core/pos.hpp and core/rectangle.hpp instead.")]] core_types
+TEST(dim, operations)
 {
+    using enum fubuki::test::dim_pos::which;
+    using fubuki::test::dim_pos::do_test;
 
-} // namespace core_types
+    do_test<std::uint8_t, dim>();
+    do_test<std::uint16_t, dim>();
+    do_test<std::uint32_t, dim>();
+    do_test<std::uint64_t, dim>();
 
-using namespace core_types;
+    do_test<std::int8_t, dim>();
+    do_test<std::int16_t, dim>();
+    do_test<std::int32_t, dim>();
+    do_test<std::int64_t, dim>();
+}
 
-} // namespace fubuki::deprecated
-
-#endif // FUBUKI_CORE_TYPES_HPP
+} // anonymous namespace

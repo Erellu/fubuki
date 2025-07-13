@@ -31,7 +31,7 @@
 
 #include <expected>
 
-#include <core/types.hpp>
+#include <core/pos.hpp>
 
 #include "io/platform/error.hpp"
 #include "io/platform/linux/xlib/mouse.hpp"

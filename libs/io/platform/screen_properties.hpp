@@ -34,7 +34,8 @@
 #include <string>
 #include <vector>
 
-#include <core/types.hpp>
+#include <core/dim.hpp>
+#include <core/rectangle.hpp>
 
 namespace fubuki::io::platform
 {
