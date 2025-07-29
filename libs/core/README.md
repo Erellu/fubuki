@@ -56,17 +56,17 @@ All targets depend on `fubuki::core`, which itself only depends on the Standard 
 
 ### Containers
 
-| Name                     | Type       | Category                        | Description                                                                                                | Notes                                                             |
-| ------------------------ | ---------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `flat_set`               | Type alias | Container, contiguous container | Alias to `future::flat_set`                                                                                | _May_ become an alias to the Standard Library type in the future. |
-| `future::flat_set`       | `class`    | Container, contiguous container | Implementation of [`std::flat_set`](https://en.cppreference.com/w/cpp/container/flat_set.html)             | N.A                                                               |
-| `future::inplace_vector` | `class`    | Container, contiguous container | Implementation of [`std::inplace_vector`](https://en.cppreference.com/w/cpp/container/inplace_vector.html) | N.A.                                                              |
-| `inplace_vector`         | Type alias | Container, contiguous container | Alias to `future::inplace_vector`                                                                          | _May_ become an alias to the Standard Library type in the future. |
-| `md_vector`              | `class`    | Container                       | A RAII wrapper around a C-array `T[][]...` (with the number of dimensions known at compile-time).          | **Avoid** unless you need a `T**`.                                |
-| `md_vector_view`         | `class`    | View                            | View of a `md_vector` or of the corresponding C storage type.                                              | N.A.                                                              |
-| `operator""_literal`     | `class`    | Helper                          | Constructs a string literal.                                                                               | N.A.                                                              |
-| `small_vector`           | `class`    | Container, contiguous container | `vector` with SBO (Small Buffer Optimisation).                                                             | Use as default container.                                         |
-| `string_literal`         | `class`    | Container, contiguous container | Ensures a raw C string parameter is from a string literal.                                                 | Use as default container for string literals.                     |
+| Name                     | Type          | Category                        | Description                                                                                                | Notes                                                             |
+| ------------------------ | ------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `flat_set`               | Type alias    | Container, contiguous container | Alias to `future::flat_set`                                                                                | _May_ become an alias to the Standard Library type in the future. |
+| `future::flat_set`       | `class`       | Container, contiguous container | Implementation of [`std::flat_set`](https://en.cppreference.com/w/cpp/container/flat_set.html)             | N.A                                                               |
+| `future::inplace_vector` | `class`       | Container, contiguous container | Implementation of [`std::inplace_vector`](https://en.cppreference.com/w/cpp/container/inplace_vector.html) | N.A.                                                              |
+| `inplace_vector`         | Type alias    | Container, contiguous container | Alias to `future::inplace_vector`                                                                          | _May_ become an alias to the Standard Library type in the future. |
+| `md_vector`              | `class`       | Container                       | A RAII wrapper around a C-array `T[][]...` (with the number of dimensions known at compile-time).          | **Avoid** unless you need a `T**`.                                |
+| `md_vector_view`         | `class`       | View                            | View of a `md_vector` or of the corresponding C storage type.                                              | N.A.                                                              |
+| `operator""_literal`     | Free function | Helper                          | Constructs a `string_literal`.                                                                             | N.A.                                                              |
+| `small_vector`           | `class`       | Container, contiguous container | `vector` with SBO (Small Buffer Optimisation).                                                             | Use as default container.                                         |
+| `string_literal`         | `class`       | Container, contiguous container | Ensures a raw C string parameter is from a string literal.                                                 | Use as default container for string literals.                     |
 
 ### Memory
 
@@ -76,7 +76,6 @@ All targets depend on `fubuki::core`, which itself only depends on the Standard 
 | `collect`           | Free function | Type conversion | Converts a span of a type to a `small_vector` of another type.                                                                                  | N.A.  |
 | `make_opaque`       | Free function | Helper          | Makes a `unique_ptr` opaque: returns an `opaque_unique_ptr`, that will properly delete its contents, but only expose an opaque `void*` pointer. | N.A.  |
 | `opaque_unique_ptr` | Type alias    | Helper          | Alias to a corresponding opaque pointer.                                                                                                        | N.A.  |
-| `u_dimension<n>d`   | Type alias    | Helper          | Unsigned integer n-D dimension.                                                                                                                 | N.A.  |
 | `unique_c_ptr`      | Type alias    | Storage         | Takes ownership over a `malloc`-allocated storage, and `free`s it upon destruction.                                                             | N.A.  |
 
 ### Error handling
@@ -122,9 +121,11 @@ All targets depend on `fubuki::core`, which itself only depends on the Standard 
 | `nontype_t`                  | Type alias    | Utility         | Alias to `future::nontype_t`                                                                                                                    | _May_ become an alias to the Standard Library type in the future.     |
 | `pos<n>d`                    | `struct`      | Helper          | 1, 2, or 3 position of any type.                                                                                                                | N.A.                                                                  |
 | `position<n>d`               | Type alias    | Helper          | Signed integer n-D position.                                                                                                                    | N.A.                                                                  |
-| `rectangle<n>d`              | `struct`      | Helper          | n-D rectangle.                                                                                                                                  | N.A.                                                                  |
+| `rec<n>d`                    | `struct`      | Helper          | n-D rectangle.                                                                                                                                  | N.A.                                                                  |
+| `rectangle<n>d`              | Type alias    | Helper          | n-D rectangle with size and dimensions of type `std::int32_t`.                                                                                  | N.A.                                                                  |
 | `u_dimension<n>d`            | Type alias    | Helper          | Unsigned integer n-D dimension.                                                                                                                 | N.A.                                                                  |
 | `u_position<n>d`             | Type alias    | Helper          | Unsigned integer n-D position.                                                                                                                  | N.A.                                                                  |
+| `u_rectangle<n>d`            | Type alias    | Helper          | n-D rectangle with size and dimensions of type `std::uint32_t`.                                                                                 | N.A.                                                                  |
 | `version_number`             | `struct`      | Version         | Version number providing a valid (implicit) conversion to a Vulkan-like encoded version number.                                                 | N.A.                                                                  |
 
 ### Vulkan adaptors
