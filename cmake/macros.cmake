@@ -44,8 +44,8 @@ endfunction(target_link_libraries_system)
 # You should usually call it only once from the main CMakeLists.txt.
 # If you need to call it twice (for subprojects for example), call fubuki_finalise() first.
 ########################################
-# param: current_project_name    - Name of the current project, as STRING.
-# param: current_project_version - Version of the project.
+# param: NAME         - Name of the current project, as STRING.
+# param: INSTALLATION - Indicates if the project must be installed.
 #
 # output: sets the following variables:
 #    Variables (constants):
