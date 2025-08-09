@@ -1,5 +1,9 @@
 project(fubuki_dependencies LANGUAGES CXX)
 
+fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" AUTHOR_WARNING)
+
+set(FUBUKI_PROJECT "fubuki")
+
 #------------------------------------------------------------------------------
 # Previous state of options
 

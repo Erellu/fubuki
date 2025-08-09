@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 include(cmake/warning_setup.cmake)
 include(cmake/macros.cmake)
 
+file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake FUBUKI_CMAKE_MACROS)
+file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/warning_setup.cmake FUBUKI_SETUP_WARNING_LIST)
+
 #------------------------------------------------------------------------------
 # CMake options
 
