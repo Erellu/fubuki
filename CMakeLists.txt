@@ -79,14 +79,6 @@ if(UNIX)
 endif()
 
 #------------------------------------------------------------------------------
-# Setup
-
-fubuki_setup(
-    NAME "fubuki"
-    INSTALLATION ${FUBUKI_INSTALL}
-)
-
-#------------------------------------------------------------------------------
 # Code generation
 
 # Always required for glslang's update_sources.py
@@ -140,6 +132,11 @@ endif()
 #------------------------------------------------------------------------------
 # Targets
 
+fubuki_setup(
+    NAME "fubuki"
+    INSTALLATION ${FUBUKI_INSTALL}
+)
+
 add_subdirectory(dependencies)
 add_subdirectory(libs)
 
@@ -151,8 +148,5 @@ if(FUBUKI_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
-#------------------------------------------------------------------------------
-# Finalisation
 
 fubuki_finalise()
