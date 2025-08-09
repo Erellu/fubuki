@@ -47,6 +47,33 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #------------------------------------------------------------------------------
+# Dependencies
+
+include(CMakePackageConfigHelpers)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
+
+if(PROJECT_IS_TOP_LEVEL)
+    find_package(Vulkan REQUIRED)
+endif()
+
+if (NOT Vulkan_FOUND)
+    message(FATAL_ERROR
+            "Could not find Vulkan! "
+            "Can you confirm you downloaded the SDK? https://www.lunarg.com/vulkan-sdk/"
+            "\nNOTE: if Fubuki is a subproject (added via add_subdirectory), you must perform your own find_package(Vulkan)."
+            "This is to enable the user (you) to provide hints to CMake."
+        )
+endif()
+
+string(REPLACE "/" "\/" FUBUKI_VULKAN_LIB_REGEX "${Vulkan_LIBRARIES}")
+string(REPLACE "." "\." FUBUKI_VULKAN_LIB_REGEX "${FUBUKI_VULKAN_LIB_REGEX}")
+
+if(UNIX)
+    find_package(X11 REQUIRED)
+    find_package(wayland_client 1.10.0 REQUIRED)
+endif()
+
+#------------------------------------------------------------------------------
 # Setup
 
 fubuki_setup(
@@ -103,18 +130,6 @@ if(NOT ${FUBUKI_SKIP_GENERATION})
     endif()
 else()
     message(STATUS "Skipping code generation. To enable it, set FUBUKI_SKIP_GENERATION to OFF.")
-endif()
-
-#------------------------------------------------------------------------------
-# Dependencies
-
-if(UNIX)
-    find_package(X11 REQUIRED)
-
-    include(CMakePackageConfigHelpers)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
-
-    find_package(wayland_client 1.10.0 REQUIRED)
 endif()
 
 #------------------------------------------------------------------------------

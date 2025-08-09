@@ -70,7 +70,6 @@ endmacro()
 # output: sets the following variables:
 #    Variables (constants):
 #       FUBUKI_PROJECT                          --- Project name. Value of 'current_project_name'.
-#       FUBUKI_VULKAN_LIB_REGEX                 --- The value of ${Vulkan_LIBRARIES} formatted to work as a CMake REGEX.
 #       ${FUBUKI_PROJECT}_NAMESPACE             --- Namespace of the exported targets.
 #
 #       ${FUBUKI_PROJECT}_INSTALL_PREFIX                --- Where the installation is performed.
@@ -233,25 +232,6 @@ macro(fubuki_setup)
     endif()
 
     fubuki_setup_warning_list()
-
-    #----------------------------------------------------------------
-    # Vulkan
-
-    if(PROJECT_IS_TOP_LEVEL)
-        find_package(Vulkan REQUIRED)
-    endif()
-
-    if (NOT Vulkan_FOUND)
-        message(FATAL_ERROR
-                "Could not find Vulkan! "
-                "Can you confirm you downloaded the SDK? https://www.lunarg.com/vulkan-sdk/"
-                "\nNOTE: if Fubuki is a subproject (added via add_subdirectory), you must perform your own find_package(Vulkan)."
-                "This is to enable the user (you) to provide hints to CMake."
-            )
-    endif()
-
-    string(REPLACE "/" "\/" FUBUKI_VULKAN_LIB_REGEX "${Vulkan_LIBRARIES}")
-    string(REPLACE "." "\." FUBUKI_VULKAN_LIB_REGEX "${FUBUKI_VULKAN_LIB_REGEX}")
 
     #----------------------------------------------------------------
     # Flags
