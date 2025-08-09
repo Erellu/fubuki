@@ -717,47 +717,7 @@ endmacro()
 #
 # prerequisites: fubuki_setup must have been called before.
 macro(fubuki_add_library)
-
-    #----------------------------------------------------------------
-    # Arguments
-
-    set(fubuki_add_library_optional_args_identifiers)
-
-    set(fubuki_add_library_single_value_args_identifiers)
-
-    set(fubuki_add_library_multi_value_args_identifiers
-        NAME
-        PUBLIC_DEPENDENCIES
-        PRIVATE_DEPENDENCIES
-        HEADERS
-        SOURCES
-        PUBLIC_LINK
-        PRIVATE_LINK
-        SYSTEM_PUBLIC_LINK
-        SYSTEM_PRIVATE_LINK
-    )
-
-    cmake_parse_arguments(fubuki_library
-                          "${fubuki_add_library_optional_args_identifiers}"
-                          "${fubuki_add_library_single_value_args_identifiers}"
-                          "${fubuki_add_library_multi_value_args_identifiers}"
-                          ${ARGN})
-
-    #----------------------------------------------------------------
-    # Target
-
-    fubuki_add_target(NAME "${fubuki_library_NAME}"
-                      TYPE "LIBRARY"
-                      PUBLIC_DEPENDENCIES "${fubuki_library_PUBLIC_DEPENDENCIES}"
-                      PRIVATE_DEPENDENCIES "${fubuki_library_PRIVATE_DEPENDENCIES}"
-                      HEADERS "${fubuki_library_HEADERS}"
-                      SOURCES "${fubuki_library_SOURCES}"
-                      PUBLIC_LINK "${fubuki_library_PUBLIC_LINK}"
-                      PRIVATE_LINK "${fubuki_library_PRIVATE_LINK}"
-                      SYSTEM_PUBLIC_LINK "${fubuki_library_SYSTEM_PUBLIC_LINK}"
-                      SYSTEM_PRIVATE_LINK "${fubuki_library_SYSTEM_PRIVATE_LINK}"
-                    )
-
+    fubuki_add_target(TYPE "LIBRARY" ${ARGN})
 endmacro() # fubuki_add_library
 
 #------------------------------------------------------------------------------
@@ -779,48 +739,7 @@ endmacro() # fubuki_add_library
 # prerequisites: fubuki_setup must have been called before.
 #
 macro(fubuki_add_executable)
-
-    #----------------------------------------------------------------
-    # Arguments
-
-    set(fubuki_add_executable_optional_args_identifiers)
-
-    set(fubuki_add_executable_single_value_args_identifiers)
-
-    set(fubuki_add_executable_multi_value_args_identifiers
-        NAME
-        PUBLIC_DEPENDENCIES
-        PRIVATE_DEPENDENCIES
-        HEADERS
-        SOURCES
-        PUBLIC_LINK
-        PRIVATE_LINK
-        SYSTEM_PUBLIC_LINK
-        SYSTEM_PRIVATE_LINK
-    )
-
-    cmake_parse_arguments(fubuki_executable
-                          "${fubuki_add_executable_optional_args_identifiers}"
-                          "${fubuki_add_executable_single_value_args_identifiers}"
-                          "${fubuki_add_executable_multi_value_args_identifiers}"
-                          ${ARGN})
-
-
-    #----------------------------------------------------------------
-    # Target
-
-    fubuki_add_target(NAME "${fubuki_executable_NAME}"
-                      TYPE "EXECUTABLE"
-                      PUBLIC_DEPENDENCIES "${fubuki_executable_PUBLIC_DEPENDENCIES}"
-                      PRIVATE_DEPENDENCIES "${fubuki_executable_PRIVATE_DEPENDENCIES}"
-                      HEADERS "${fubuki_executable_HEADERS}"
-                      SOURCES "${fubuki_executable_SOURCES}"
-                      PUBLIC_LINK "${fubuki_executable_PUBLIC_LINK}"
-                      PRIVATE_LINK "${fubuki_executable_PRIVATE_LINK}"
-                      SYSTEM_PUBLIC_LINK "${fubuki_executable_SYSTEM_PUBLIC_LINK}"
-                      SYSTEM_PRIVATE_LINK "${fubuki_executable_SYSTEM_PRIVATE_LINK}"
-                    )
-
+    fubuki_add_target(TYPE "EXECUTABLE" ${ARGN})
 endmacro() # fubuki_add_executable
 
 #------------------------------------------------------------------------------
@@ -884,6 +803,6 @@ macro(fubuki_add_test)
                       SYSTEM_PRIVATE_LINK "${fubuki_test_SYSTEM_PRIVATE_LINK};GTest::gtest_main"
                     )
 
-endmacro() # fubuki_add_executable
+endmacro() # fubuki_add_test
 
 #------------------------------------------------------------------------------
