@@ -46,6 +46,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+fubuki_setup_warning_list()
+
 #------------------------------------------------------------------------------
 # Dependencies
 

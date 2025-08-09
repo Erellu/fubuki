@@ -67,32 +67,31 @@ endmacro()
 # param: NAME         - Name of the current project, as STRING.
 # param: INSTALLATION - Indicates if the project must be installed.
 #
-# output: sets the following variables:
+# output: sets the following variables, in which ${NAME} is the value of the NAME argument fubuki_setup:
 #    Variables (constants):
-#       FUBUKI_PROJECT                          --- Project name. Value of 'current_project_name'.
-#       ${FUBUKI_PROJECT}_NAMESPACE             --- Namespace of the exported targets.
+#       FUBUKI_SETUP_PROJECT_LIST            - List of the project names.
+#                                              The project name is appended at the front.
+#                                              Modifying this value outside fubuki macros may result in expected behaviour.
+#       ${NAME}_NAMESPACE                    - Namespace of the exported targets.
 #
-#       ${FUBUKI_PROJECT}_INSTALL_PREFIX                --- Where the installation is performed.
-#       ${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION   --- Where the binaries are installed.
-#       ${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION   --- Where the libraries are installed.
-#       ${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION   --- Where the libraries are installed (also).
-#       ${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION  --- Where the headers are installed.
-#       ${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR          --- Where the headers are installed.
-#       ${FUBUKI_PROJECT}_GENERATED_DIR                 --- Where the CMake-generated files are put.
-#       ${FUBUKI_PROJECT}_OUTPUT_DIR                    --- Where the binaries (.dll/.so, .exe, etc.) are put.
+#       ${NAME}_INSTALL_PREFIX               - Where the installation is performed.
+#       ${NAME}_INSTALL_RUNTIME_DESTINATION  - Where the binaries are installed.
+#       ${NAME}_INSTALL_ARCHIVE_DESTINATION  - Where the libraries are installed.
+#       ${NAME}_INSTALL_LIBRARY_DESTINATION  - Where the libraries are installed (also).
+#       ${NAME}_INSTALL_INCLUDES_DESTINATION - Where the headers are installed.
+#       ${NAME}_INCLUDES_INSTALL_DIR         - Where the headers are installed.
+#       ${NAME}_GENERATED_DIR                - Where the CMake-generated files are put.
+#       ${NAME}_OUTPUT_DIR                   - Where the binaries (.dll/.so, .exe, etc.) are put.
 #
-#       ${FUBUKI_PROJECT}_VERSION_CONFIG        --- Name of the CMake version config file.
-#       ${FUBUKI_PROJECT}_PROJECT_CONFIG        --- Name of the CMake config file.
+#       ${NAME}_VERSION_CONFIG               - Name of the CMake version config file.
+#       ${NAME}_PROJECT_CONFIG               - Name of the CMake config file.
 #
-#       ${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME   --- Export set for the targets added using fubuki_add_library.
-#       ${FUBUKI_PROJECT}_EXPORT_NAME           --- Name of CMake Targets file.
-#       ${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR    --- Where to install cmake "Targets" files.
+#       ${NAME}_TARGETS_EXPORT_NAME          - Export set for the targets added using fubuki_add_library.
+#       ${NAME}_EXPORT_NAME                  - Name of CMake Targets file.
+#       ${NAME}_CONFIG_INSTALL_DIR           - Where to install cmake "Targets" files.
 #
-#        FUBUKI_WARNINGS                        --- A list of warnings enabled by Fubuki for the compiler in use.
-#    Flags:
-#        FUBUKI_SETUP                           --- A flag indicating this function was call. Unsetting it or setting a value that is not 'TRUE' will lead to the impossibility to call fubuki_finalise().
 #    Properties:
-#        ${FUBUKI_PROJECT}_components           --- Global property to which target added through fubuki_add_library are added.
+#        ${NAME}_components                  - Global property to which target added through fubuki_add_library are added.
 #
 # These names are RESERVED and **MUST NOT** be changed manually (read-only access is fine).
 
@@ -123,10 +122,6 @@ macro(fubuki_setup)
     #----------------------------------------------------------------
     # Sanity checks
 
-    if(DEFINED FUBUKI_SETUP)
-        message(FATAL_ERROR "fubuki_setup already called. If this is intentional, please call fubuki_finalise first.")
-    endif()
-
     if("${fubuki_setup_NAME}" STREQUAL "")
         message(FATAL_ERROR "Project name must not be empty.")
     endif()
@@ -135,14 +130,19 @@ macro(fubuki_setup)
         message(FATAL_ERROR "Invalid argument for INSTALLATION. Expected ON or OFF")
     endif()
 
-    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR)
+    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
 
-    if(DEFINED FUBUKI_PROJECT AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'FUBUKI_PROJECT' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    # Set again later for readability
+    # Copy to this variable name for readability
     set(FUBUKI_PROJECT "${fubuki_setup_NAME}")
+
+    if(NOT DEFINED FUBUKI_SETUP_PROJECT_LIST)
+        set(FUBUKI_SETUP_PROJECT_LIST ${FUBUKI_PROJECT})
+    else()
+        if(${FUBUKI_PROJECT} IN_LIST FUBUKI_SETUP_PROJECT_LIST)
+            message(FATAL_ERROR "fubuki_setup has already been called for project " ${FUBUKI_PROJECT} ".")
+        endif()
+        list(PREPEND FUBUKI_SETUP_PROJECT_LIST ${FUBUKI_PROJECT})
+    endif()
 
     # No check for ${FUBUKI_PROJECT}_components, since it's allowed to inherit that value for compatibility purposes
     fubuki_warn_if_defined(NAMES "${FUBUKI_PROJECT}_NAMESPACE"
@@ -156,7 +156,7 @@ macro(fubuki_setup)
                                  "${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME"
                                  "${FUBUKI_PROJECT}_EXPORT_NAME"
                                  "${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR"
-                           TYPE AUTHOR)
+                           TYPE AUTHOR_WARNING)
 
     #----------------------------------------------------------------
     # General setup
@@ -231,12 +231,14 @@ macro(fubuki_setup)
         include(InstallRequiredSystemLibraries)
     endif()
 
-    fubuki_setup_warning_list()
-
     #----------------------------------------------------------------
     # Flags
 
     set(FUBUKI_SETUP TRUE)
+
+    #----------------------------------------------------------------
+    # Cleanup
+    unset(FUBUKI_PROJECT)
 
 endmacro() # fubuki_setup
 
@@ -249,9 +251,12 @@ endmacro() # fubuki_setup
 
 macro(fubuki_finalise)
 
-    if(NOT DEFINED FUBUKI_SETUP OR NOT ${FUBUKI_SETUP})
-        message(FATAL_ERROR "fubuki_setup(...) not called yet.")
+    if(NOT FUBUKI_SETUP_PROJECT_LIST)
+        message(FATAL_ERROR "fubuki_setup(...) has no active project.")
     endif()
+    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
+
+    list(GET FUBUKI_SETUP_PROJECT_LIST 0 FUBUKI_PROJECT)
 
     #----------------------------------------------------------------
     # Compiler runtime
@@ -315,14 +320,11 @@ macro(fubuki_finalise)
     endif()
 
     #----------------------------------------------------------------
-    # Unset flags
-
-    unset(FUBUKI_SETUP)
-    unset(FUBUKI_PROJECT)
-
-    #----------------------------------------------------------------
     # Clear
 
+    list(POP_FRONT FUBUKI_SETUP_PROJECT_LIST)
+
+    unset(FUBUKI_PROJECT)
     unset(FUBUKI_PROJECT_components_value)
 
 endmacro() # fubuki_finalise
@@ -331,7 +333,7 @@ endmacro() # fubuki_finalise
 # Creates a target from the sources given, links it to the libraries
 # given, installs it and updates the target list.
 ########################################
-# param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically.
+# param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
 # param: TYPE                 - Target type. Either "LIBRARY" or "EXECUTABLE"
 # param: PUBLIC_DEPENDENCIES  - Targets that must be build before this one and linked publicly.
@@ -348,7 +350,7 @@ endmacro() # fubuki_finalise
 # prerequisites: fubuki_setup must have been called before.
 #
 # side effect: adds the following private definition(s):
-#   - (PRIVATE) FUBUKI_TRANSLATION_UNIT
+#   - (PRIVATE) ${FUBUKI_PROJECT}_TRANSLATION_UNIT
 #  -  (PRIVATE) VK_NO_PROTOTYPES
 #  -  (PRIVATE) "${current_target_upper}_COMPILE"
 macro(fubuki_add_target)
@@ -356,8 +358,8 @@ macro(fubuki_add_target)
     #----------------------------------------------------------------
     # Sanity checks
 
-    if(NOT DEFINED FUBUKI_SETUP)
-        message(FATAL_ERROR "fubuki_setup(...) not called yet.")
+    if(NOT FUBUKI_SETUP_PROJECT_LIST)
+        message(FATAL_ERROR "fubuki_setup(...) has no active project.")
     endif()
 
     fubuki_warn_if_defined(NAMES "current_project"
@@ -370,7 +372,7 @@ macro(fubuki_add_target)
                                  "components"
                                  "public_deps"
                                  "private_deps"
-                           TYPE AUTHOR)
+                           TYPE AUTHOR_WARNING)
 
     #----------------------------------------------------------------
     # Arguments
@@ -397,6 +399,10 @@ macro(fubuki_add_target)
                           "${fubuki_add_target_single_value_args_identifiers}"
                           "${fubuki_add_target_multi_value_args_identifiers}"
                           ${ARGN})
+
+    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
+
+    list(GET FUBUKI_SETUP_PROJECT_LIST 0 FUBUKI_PROJECT)
 
     #----------------------------------------------------------------
     # Project name
@@ -627,6 +633,7 @@ macro(fubuki_add_target)
     #----------------------------------------------------------------
     # Cleanup
 
+    unset(FUBUKI_PROJECT)
     unset(current_project)
     unset(current_target_upper)
     unset(current_source_dir_relative_path)
@@ -646,7 +653,8 @@ endmacro()
 # Creates a shared library from the sources given, links it to the libraries
 # given, installs it and updates the target list.
 ########################################
-# param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically.
+# param: NAME                 - Name of the library.
+#                               A prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
 # param: PUBLIC_DEPENDENCIES  - Targets that must be build before this one and linked publicly.
 # param: PRIVATE_DEPENDENCIES - Targets that must be build before this one and linked privately.
@@ -666,7 +674,8 @@ endmacro() # fubuki_add_library
 # Creates an executable from the sources given, links it to the libraries
 # given, installs it and updates the target list.
 ########################################
-# param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically.
+# param: NAME                 - Name of the library.
+#                               A prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
 # param: PUBLIC_DEPENDENCIES  - Targets that must be build before this one and linked publicly.
 # param: PRIVATE_DEPENDENCIES - Targets that must be build before this one and linked privately.
