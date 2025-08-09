@@ -38,6 +38,26 @@ function(fubuki_target_link_libraries_system target)
 endfunction(fubuki_target_link_libraries_system)
 
 #------------------------------------------------------------------------------
+# Issues a message(WARNING) if an identifier exists in the current scope.
+########################################
+# param: NAMES - The names to check, as a list of strings
+# param: TYPE  - The type of the message, directlty forwarded to CMake's message().
+
+macro(fubuki_warn_if_defined)
+  cmake_parse_arguments(fubuki_warn_if_defined
+                        "" # Optional
+                        "TYPE" # Single values
+                        "NAMES" # Multiple values
+                        ${ARGN})
+
+    foreach(NAME ${fubuki_warn_if_defined_NAMES})
+        if(DEFINED ${NAME})
+            message(${fubuki_warn_if_defined_TYPE} "The identifier '${NAME}' is already defined in the current scope and may be overriden.")
+        endif()
+    endforeach()
+endmacro()
+
+#------------------------------------------------------------------------------
 # Sets up variables used for the building process (install directory, compiler, etc)
 # WARNING: calling this function twice with different arguments will result in libraries being
 # considered as from different projects, hence installed at different places and in a different export set.
@@ -116,6 +136,8 @@ macro(fubuki_setup)
         message(FATAL_ERROR "Invalid argument for INSTALLATION. Expected ON or OFF")
     endif()
 
+    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR)
+
     if(DEFINED FUBUKI_PROJECT AND FUBUKI_VERBOSE_BUILD)
         message(WARNING "Variable 'FUBUKI_PROJECT' is already set. It will be overriden by macro fubuki_setup.")
     endif()
@@ -123,51 +145,19 @@ macro(fubuki_setup)
     # Set again later for readability
     set(FUBUKI_PROJECT "${fubuki_setup_NAME}")
 
-    if(DEFINED ${FUBUKI_PROJECT}_NAMESPACE AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_NAMESPACE' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR  AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_GENERATED_DIR AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_GENERATED_DIR' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_VERSION_CONFIG AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_VERSION_CONFIG' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_PROJECT_CONFIG AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_PROJECT_CONFIG' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_EXPORT_NAME AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_EXPORT_NAME' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
-    if(DEFINED ${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable '${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR' is already set. It will be overriden by macro fubuki_setup.")
-    endif()
-
     # No check for ${FUBUKI_PROJECT}_components, since it's allowed to inherit that value for compatibility purposes
+    fubuki_warn_if_defined(NAMES "${FUBUKI_PROJECT}_NAMESPACE"
+                                 "${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION"
+                                 "${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION"
+                                 "${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION"
+                                 "${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR"
+                                 "${FUBUKI_PROJECT}_GENERATED_DIR"
+                                 "${FUBUKI_PROJECT}_VERSION_CONFIG"
+                                 "${FUBUKI_PROJECT}_PROJECT_CONFIG"
+                                 "${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME"
+                                 "${FUBUKI_PROJECT}_EXPORT_NAME"
+                                 "${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR"
+                           TYPE AUTHOR)
 
     #----------------------------------------------------------------
     # General setup
@@ -390,45 +380,17 @@ macro(fubuki_add_target)
         message(FATAL_ERROR "fubuki_setup(...) not called yet.")
     endif()
 
-    if(DEFINED current_project AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'current_project' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED current_target_upper AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'current_target_upper' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED current_source_dir_relative_path AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'current_source_dir_relative_path' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED current_source_dirs AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'current_source_dirs' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED path_root AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'path_root' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED headers_destination_relative_path AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'headers_destination_relative_path' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED stripped_relative_path AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'stripped_relative_path' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED components AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'stripped_relative_path' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED public_deps AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'public_deps' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
-
-    if(DEFINED private_deps AND FUBUKI_VERBOSE_BUILD)
-        message(WARNING "Variable 'private_deps' is already set. It will be overriden by macro fubuki_add_library.")
-    endif()
+    fubuki_warn_if_defined(NAMES "current_project"
+                                 "current_target_upper"
+                                 "current_source_dir_relative_path"
+                                 "current_source_dirs"
+                                 "path_root"
+                                 "headers_destination_relative_path"
+                                 "stripped_relative_path"
+                                 "components"
+                                 "public_deps"
+                                 "private_deps"
+                           TYPE AUTHOR)
 
     #----------------------------------------------------------------
     # Arguments
