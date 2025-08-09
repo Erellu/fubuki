@@ -2,10 +2,11 @@ name: Complete format check
 
 on:
   push:
+    branches: [ "master" ]
     tags:
       - v*
 
-workflow_dispatch:
+# workflow_dispatch:
 
 jobs:
   lint:
