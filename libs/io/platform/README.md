@@ -53,7 +53,7 @@ fubuki_add_library(NAME                 target_name
 ### Events
 
 >[!NOTE]
-> All features related to events described in [`fubuki::io`](https://github.com/Erellu/fubuki/blob/master/libs/io/README.md) are also available through `io::platform` under `io::platform::event`.
+> All features related to events described in [`fubuki::io`](https://github.com/Erellu/fubuki/blob/dev/libs/io/README.md) are also available through `io::platform` under `io::platform::event`.
 
 ### Error
 

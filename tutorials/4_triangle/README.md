@@ -8,7 +8,7 @@ The infamous triangle on blue background, drawn through the facilities of `fubuk
 
 ### Global resources
 
-The global resources (instance, device, window) are allocated through the facilities of `fubuki::tutorial::support`, similar to [Tutorial 02](https://github.com/Erellu/fubuki/tree/master/tutorials/2_vulkan_context).
+The global resources (instance, device, window) are allocated through the facilities of `fubuki::tutorial::support`, similar to [Tutorial 02](https://github.com/Erellu/fubuki/tree/dev/tutorials/2_vulkan_context).
 
 `fubuki::tutorial::support::app::init` does the following:
 - Creates a `fubuki::io::display`
@@ -130,7 +130,7 @@ const auto success = fubuki::fuyu::recreate(swapchain, swapchain_resources, pnex
 `fubuki::fuyu` provides the `command::pipe` `namespace`, which enables the user to write code similar to `std::ranges`,  by concatenating Vulkan commands.
 
 > [!TIP]
-> See also  [fuyu/command/README.md](https://github.com/Erellu/fubuki/tree/master/libs/fuyu/command/pipe/README.md) for more information about `command::pipe`.
+> See also  [fuyu/command/README.md](https://github.com/Erellu/fubuki/tree/dev/libs/fuyu/command/pipe/README.md) for more information about `command::pipe`.
 
 ```cpp
 
@@ -239,4 +239,4 @@ if(not r)
 ```
 _______________________________________________
 
-<!-- [Next tutorial](https://github.com/Erellu/fubuki/tree/master/tutorials/5_xxx)-->
+<!-- [Next tutorial](https://github.com/Erellu/fubuki/tree/dev/tutorials/5_xxx)-->

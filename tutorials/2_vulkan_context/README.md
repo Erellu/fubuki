@@ -99,4 +99,4 @@ void shutdown() noexcept
 > In `fubuki::tutorial::app`, these operations are performed in `app::~resources`.
 _______________________________________________
 
-[Next tutorial](https://github.com/Erellu/fubuki/tree/master/tutorials/3_compiling_shaders)
+[Next tutorial](https://github.com/Erellu/fubuki/tree/dev/tutorials/3_compiling_shaders)

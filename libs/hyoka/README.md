@@ -74,4 +74,4 @@ fubuki_add_library(NAME                 target_name
 | `stage::ray_tracing`             | `enum`        | Shader compilation, parameter      | Indicates a shader source is executed during a stage of a ray tracing pipeline.                      | N.A.                                        |
 
 > [!NOTE]
-> See also: [Tutorial 03: Compiling shaders](https://github.com/Erellu/fubuki/tree/master/tutorials/3_compiling_shaders)
+> See also: [Tutorial 03: Compiling shaders](https://github.com/Erellu/fubuki/tree/dev/tutorials/3_compiling_shaders)

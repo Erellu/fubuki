@@ -126,4 +126,4 @@ This section provides an overview of the different options available.
 
 _______________________________________________
 
-[Next tutorial](https://github.com/Erellu/fubuki/tree/master/tutorials/4_triangle)
+[Next tutorial](https://github.com/Erellu/fubuki/tree/dev/tutorials/4_triangle)
