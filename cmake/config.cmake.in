@@ -8,7 +8,8 @@ message(STATUS "Found @FUBUKI_PROJECT@.")
 #------------------------------------------------------------------------------
 # Dependencies
 
-if(@FUBUKI_PROJECT@ STREQUAL "fubuki")
+# Special step for fubuki, projects that depend on fubuki are not required to perform this step
+if("@FUBUKI_PROJECT@" STREQUAL "fubuki")
 
     #----------------------------------------------------------------
     # GLM
@@ -73,7 +74,19 @@ elseif(UNIX)
 endif()
 
 #------------------------------------------------------------------------------
-# Other
+# Vulkan
+# Library regex
 
-# Allow subprojects to use the same warnings as Fubuki
-set(FUBUKI_WARNINGS @FUBUKI_WARNINGS@)
+set(FUBUKI_VULKAN_LIB_REGEX @FUBUKI_VULKAN_LIB_REGEX@)
+
+#------------------------------------------------------------------------------
+# Macros
+# Enable project that depend on fubuki to directly use the macros used by fubuki
+
+@FUBUKI_CMAKE_MACROS@
+
+#------------------------------------------------------------------------------
+# Warnings
+# Enable projects that depend on Fubuki to use the same warnings as Fubuki
+
+@FUBUKI_SETUP_WARNING_LIST@
