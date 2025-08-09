@@ -6,7 +6,7 @@
 # param: target - Targets to link
 #
 # option: PUBLIC | PRIVATE | INTEFACE - Scope of the link
-function(target_link_libraries_system target)
+function(fubuki_target_link_libraries_system target)
   set(options PRIVATE PUBLIC INTERFACE)
   cmake_parse_arguments(TLLS "${options}" "" "" ${ARGN})
   foreach(op ${options})
@@ -35,7 +35,7 @@ function(target_link_libraries_system target)
       target_link_libraries(${target} ${lib})
     endif()
   endforeach()
-endfunction(target_link_libraries_system)
+endfunction(fubuki_target_link_libraries_system)
 
 #------------------------------------------------------------------------------
 # Sets up variables used for the building process (install directory, compiler, etc)
@@ -592,8 +592,8 @@ macro(fubuki_add_target)
     # Libraries to link against
     target_link_libraries(${FUBUKI_PROJECT}_${current_project} PUBLIC ${fubuki_target_PUBLIC_LINK})
     target_link_libraries(${FUBUKI_PROJECT}_${current_project} PRIVATE ${fubuki_target_PRIVATE_LINK})
-    target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PUBLIC ${fubuki_target_SYSTEM_PUBLIC_LINK})
-    target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PRIVATE ${fubuki_target_SYSTEM_PRIVATE_LINK})
+    fubuki_target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PUBLIC ${fubuki_target_SYSTEM_PUBLIC_LINK})
+    fubuki_target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PRIVATE ${fubuki_target_SYSTEM_PRIVATE_LINK})
 
     if("${fubuki_target_PUBLIC_LINK}" MATCHES "${FUBUKI_VULKAN_LIB_REGEX}")
         target_include_directories(${FUBUKI_PROJECT}_${current_project} SYSTEM PUBLIC ${Vulkan_INCLUDE_DIRS})
