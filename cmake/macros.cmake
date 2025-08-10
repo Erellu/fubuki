@@ -246,7 +246,7 @@ endmacro() # fubuki_setup
 # Finalises the build process for the current project.
 ########################################
 #
-# output: unsets FUBUKI_SETUP and FUBUKI_PROJECT, allowing to call fubuki_setup again for another subproject.
+# output: Removes the last item added to FUBUKI_SETUP_PROJECT_LIST (by the last call of fubuki_setup).
 # Other variables set by fubuki_setup are left untouched.
 
 macro(fubuki_finalise)
