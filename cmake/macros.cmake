@@ -514,7 +514,6 @@ macro(fubuki_add_target)
 
     if(MSVC)
         target_compile_definitions(${FUBUKI_PROJECT}_${current_project} PRIVATE -DNOMINMAX -DWIN32_LEAN_AND_MEAN)
-        target_compile_options(${FUBUKI_PROJECT}_${current_project} PRIVATE /bigobj)
     endif()
 
     # Preprocess defines
@@ -533,8 +532,6 @@ macro(fubuki_add_target)
     if("${FUBUKI_PROJECT}" STREQUAL "fubuki")
         # Ensures Fubuki compiles in such conditions
         target_compile_definitions(${FUBUKI_PROJECT}_${current_project} PRIVATE VK_NO_PROTOTYPES)
-        # Used to toggle warnings about private API and similar things
-        target_compile_definitions(${FUBUKI_PROJECT}_${current_project} PRIVATE FUBUKI_TRANSLATION_UNIT)
     endif()
 
     # Libraries to link against
