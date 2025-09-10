@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSD 2-Clause License
  *
  * Copyright (c) 2025, Erwan DUHAMEL
@@ -286,11 +286,10 @@ TEST(result, api_call_info)
 
         const auto fvk_result = fubuki::result{value};
 
-        const VkResult as_result = call;
+        const VkResult as_result = call.result.code;
 
         EXPECT_EQ(static_cast<bool>(call), static_cast<bool>(fvk_result)) << "Failed for " << str;
         EXPECT_EQ(as_result, static_cast<VkResult>(fvk_result)) << "Failed for " << str;
-        EXPECT_EQ(as_result, static_cast<VkResult>(call)) << "Failed for " << str;
         EXPECT_EQ(as_result, value) << "Failed for " << str;
     }
 }
