@@ -162,6 +162,6 @@ inline constexpr void assertion(const bool           condition,
 #define fubuki_always_assert(expression, message) fubuki_assert_impl(expression, message)
 
 /// Same as fubuki_assert_if, but this assertion is always enabled, even if FUBUKI_ENABLE_ASSERTION is not defined.
-#define fubuki_always_assert_if(expression, message) fubuki_assert_if_impl(expression, message)
+#define fubuki_always_assert_if(condition, expression, message) fubuki_assert_if_impl(condition, expression, message)
 
 #endif // FUBUKI_CORE_ASSERTION_HPP
