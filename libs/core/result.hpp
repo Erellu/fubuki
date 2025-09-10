@@ -323,14 +323,8 @@ struct result
 {
     VkResult code = VK_ERROR_UNKNOWN; ///< Result code.
 
-    /// Returns a human-readable string corresponding to the result.
-    [[nodiscard]] operator std::string() const { return to_string(code); }
-
     /// Converts a result to a boolean. Converts to 'true' if, and only if the result is VK_SUCCESS.
     [[nodiscard]] explicit constexpr operator bool() const noexcept { return code == VK_SUCCESS; }
-
-    /// Converts a result to the underlying Vulkan result code.
-    [[nodiscard]] constexpr operator VkResult() const noexcept { return code; }
 
     /// Converts a result to a string_view representation of the Vulkan result code.
     [[nodiscard]] constexpr operator std::string_view() const noexcept { return to_string_view(code); }

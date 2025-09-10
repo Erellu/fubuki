@@ -263,18 +263,14 @@ TEST(result, result)
     {
         const auto fvk_result = fubuki::result{value};
 
-        const std::string      as_string      = fvk_result;
         const bool             as_bool        = fvk_result.operator bool();
-        const VkResult         as_result      = fvk_result;
         const std::string_view as_string_view = fvk_result;
 
         EXPECT_TRUE((value == VK_SUCCESS and as_bool) or (value != VK_SUCCESS and not as_bool)) << "Failed for " << str << ": as_bool is " << as_bool;
 
         EXPECT_EQ(fvk_result.code, value) << "Failed for " << str;
-        EXPECT_EQ(fvk_result.code, as_result) << "Failed for " << str;
 
         EXPECT_EQ(as_string_view, fubuki::to_string_view(value));
-        EXPECT_EQ(as_string, fubuki::to_string(value));
     }
 }
 
@@ -284,12 +280,11 @@ TEST(result, api_call_info)
     {
         const fubuki::api_call_info call{.result = {.code = value}, .call_literal = {}, .location = std::source_location::current()};
 
-        const auto fvk_result = fubuki::result{value};
+        const auto fbk_result = fubuki::result{value};
 
         const VkResult as_result = call.result.code;
 
-        EXPECT_EQ(static_cast<bool>(call), static_cast<bool>(fvk_result)) << "Failed for " << str;
-        EXPECT_EQ(as_result, static_cast<VkResult>(fvk_result)) << "Failed for " << str;
+        EXPECT_EQ(static_cast<bool>(call), static_cast<bool>(fbk_result)) << "Failed for " << str;
         EXPECT_EQ(as_result, value) << "Failed for " << str;
     }
 }
