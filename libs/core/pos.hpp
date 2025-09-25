@@ -154,10 +154,10 @@ struct pos3d
 };
 
 using position2d = pos2d<std::int32_t>; ///< 2D signed position.
-using position3d = pos2d<std::int32_t>; ///< 3D signed position.
+using position3d = pos3d<std::int32_t>; ///< 3D signed position.
 
 using u_position2d = pos2d<std::uint32_t>; ///< 2D unsigned position.
-using u_position3d = pos2d<std::uint32_t>; ///< 3D unsigned position.
+using u_position3d = pos3d<std::uint32_t>; ///< 3D unsigned position.
 
 } // namespace fubuki
 
