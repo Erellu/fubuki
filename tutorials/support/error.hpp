@@ -43,7 +43,6 @@ struct any
 
     [[nodiscard]] friend constexpr bool operator==(const any& a, const any& b) noexcept  = default;
     [[nodiscard]] friend constexpr bool operator!=(const any& a, const any& b) noexcept  = default;
-    [[nodiscard]] friend constexpr auto operator<=>(const any& a, const any& b) noexcept = default;
 
     template<typename char_type, typename traits = std::char_traits<char_type>>
     friend std::basic_ostream<char_type, traits>& operator<<(std::basic_ostream<char_type, traits>& out, const any& c)
