@@ -246,7 +246,7 @@ fubuki_add_library(NAME fuyu
                               "functions/surface.cpp"
                               "functions/swapchain.cpp"
 
-                      PUBLIC_LINK "${Vulkan_LIBRARIES}"
+                      PUBLIC_LINK "Vulkan::Vulkan"
                       PRIVATE_LINK ""
                       SYSTEM_PUBLIC_LINK ""
                       SYSTEM_PRIVATE_LINK ""

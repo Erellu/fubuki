@@ -19,7 +19,7 @@ fubuki_add_library(NAME extension
                       SOURCES
                       "${fubuki_extension_functions_sources}"
                       "${fubuki_extension_sources}"
-                      PUBLIC_LINK    "${Vulkan_LIBRARIES}"
+                      PUBLIC_LINK    "Vulkan::Vulkan"
                       PRIVATE_LINK   ""
                       SYSTEM_PUBLIC_LINK ""
                       SYSTEM_PRIVATE_LINK ""

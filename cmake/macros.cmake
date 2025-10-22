@@ -272,7 +272,7 @@ macro(fubuki_finalise)
     if("${FUBUKI_PROJECT}_components_value}" STREQUAL "")
         message(FATAL_ERROR "No targets to export. Something went wrong :(")
     elseif(FUBUKI_VERBOSE_BUILD)
-        message(STATUS "The following components (available in property ${FUBUKI_PROJECT}_components) will be exported: ${FUBUKI_PROJECT_components_value}")
+        message(STATUS "[Fubuki]: The following components (available in property ${FUBUKI_PROJECT}_components) will be exported: ${FUBUKI_PROJECT_components_value}")
     endif()
 
     #----------------------------------------------------------------
@@ -415,7 +415,7 @@ macro(fubuki_add_target)
     endif()
 
     if(FUBUKI_VERBOSE_BUILD)
-        message(STATUS "Configuring ${FUBUKI_PROJECT}::${current_project}...")
+        message(STATUS "[Fubuki]: Configuring ${FUBUKI_PROJECT}::${current_project}...")
     endif()
 
     #----------------------------------------------------------------
@@ -572,7 +572,7 @@ macro(fubuki_add_target)
             file(TO_CMAKE_PATH "${headers_destination_relative_path}" headers_destination_relative_path)
 
             if(FUBUKI_VERBOSE_BUILD)
-                message("    -- Installing to: ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}/${headers_destination_relative_path}")
+                message("[Fubuki]:     -- Installing to: ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}/${headers_destination_relative_path}")
             endif()
 
             if(${${FUBUKI_PROJECT}_INSTALLATION})
@@ -616,6 +616,21 @@ macro(fubuki_add_target)
             LIBRARY DESTINATION ${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}
             INCLUDES DESTINATION ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}
         )
+
+
+        if(FUBUKI_VERBOSE_BUILD)
+            add_custom_command(
+                TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${FUBUKI_PROJECT}_${current_project} installation: copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>"
+                COMMAND_EXPAND_LISTS
+            )
+        endif()
+
+        add_custom_command(
+            TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>
+            COMMAND_EXPAND_LISTS
+        )
     endif()
 
     #----------------------------------------------------------------
@@ -641,7 +656,7 @@ macro(fubuki_add_target)
     unset(components)
 
     if(FUBUKI_VERBOSE_BUILD)
-        message(STATUS "Done.")
+        message(STATUS "[Fubuki]: Done.")
     endif()
 
 endmacro()
