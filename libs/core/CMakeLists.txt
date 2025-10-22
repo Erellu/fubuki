@@ -82,7 +82,7 @@ fubuki_add_library(NAME core
                               "format.cpp"
                               "pfn.cpp"
                               "validate.cpp"
-                      PUBLIC_LINK "${Vulkan_LIBRARIES}"
+                      PUBLIC_LINK "Vulkan::Vulkan"
                       PRIVATE_LINK ""
                       SYSTEM_PUBLIC_LINK ""
                       SYSTEM_PRIVATE_LINK ""
