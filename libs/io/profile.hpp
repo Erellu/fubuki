@@ -30,7 +30,6 @@
 #define FUBUKI_IO_PROFILE_HPP
 
 #include <chrono>
-#include <cstdint>
 #include <ctime>
 #include <expected>
 #include <functional>
@@ -44,10 +43,24 @@
 namespace fubuki::io
 {
 
+/**
+ * @brief Platform-specific data required to determine a duration when profiling.
+ */
 using profile_data = platform::profile_data::any;
 
+/**
+ * @brief Starts profiling through the most precise clock available on the current platform (performance counters on Windows, CLOCK_MONOTONIC_RAW on
+ * Linux).
+ * @returns An instance of @ref fubuki::io::profile_data that stores platform-specific content that must be passed to @ref fubuki::io::end_profile.
+ */
 [[nodiscard]] FUBUKI_IO_API std::expected<profile_data, platform::error::api_call> begin_profile() noexcept;
 
+/**
+ * @brief Ends a profiling scope.
+ * @param begin When the profiling began.
+ * @returns The time elapsed since `begin`, or an instance of @ref fubuki::io::platform::error::api_call that indicates a platform-specific API call
+ * failed.
+ */
 [[nodiscard]] FUBUKI_IO_API std::expected<std::chrono::microseconds, platform::error::api_call> end_profile(const profile_data& begin) noexcept;
 
 template<typename func, typename... args>
@@ -62,7 +75,8 @@ struct profile_result
 };
 
 /**
- * @brief Profiles the execution of a function.
+ * @brief Profiles the execution of a function through the most precise clock available on the current platform (performance counters on Windows,
+ * CLOCK_MONOTONIC_RAW on Linux).
  * @param f Call to profile.
  * @param arguments Arguments to provide to the function upon call.
  *
