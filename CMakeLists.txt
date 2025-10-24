@@ -70,9 +70,6 @@ if (NOT Vulkan_FOUND)
         )
 endif()
 
-string(REPLACE "/" "\/" FUBUKI_VULKAN_LIB_REGEX "${Vulkan_LIBRARIES}")
-string(REPLACE "." "\." FUBUKI_VULKAN_LIB_REGEX "${FUBUKI_VULKAN_LIB_REGEX}")
-
 if(UNIX)
     find_package(X11 REQUIRED)
     find_package(wayland_client 1.10.0 REQUIRED)
