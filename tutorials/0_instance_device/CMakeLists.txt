@@ -8,7 +8,7 @@ fubuki_add_executable(NAME tutorial_00_instance_device
                       PRIVATE_DEPENDENCIES ""
                       HEADERS ""
                       SOURCES "tutorial_0.cpp"
-                      PUBLIC_LINK "${Vulkan_LIBRARIES}"
+                      PUBLIC_LINK "Vulkan::Vulkan"
                       PRIVATE_LINK ""
                       SYSTEM_PUBLIC_LINK ""
                       SYSTEM_PRIVATE_LINK ""

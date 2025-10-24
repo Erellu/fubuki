@@ -540,12 +540,8 @@ macro(fubuki_add_target)
     fubuki_target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PUBLIC ${fubuki_target_SYSTEM_PUBLIC_LINK})
     fubuki_target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PRIVATE ${fubuki_target_SYSTEM_PRIVATE_LINK})
 
-    if("${fubuki_target_PUBLIC_LINK}" MATCHES "${FUBUKI_VULKAN_LIB_REGEX}")
-        target_include_directories(${FUBUKI_PROJECT}_${current_project} SYSTEM PUBLIC ${Vulkan_INCLUDE_DIRS})
-    endif()
-
-    if("${fubuki_target_PRIVATE_LINK}" MATCHES "${FUBUKI_VULKAN_LIB_REGEX}")
-        target_include_directories(${FUBUKI_PROJECT}_${current_project} SYSTEM PRIVATE ${Vulkan_INCLUDE_DIRS})
+    if(fubuki_target_TYPE STREQUAL "TEST")
+        fubuki_target_link_libraries_system(${FUBUKI_PROJECT}_${current_project} PRIVATE GTest::gtest GTest::gmock)
     endif()
 
     # Target warnings
@@ -607,6 +603,28 @@ macro(fubuki_add_target)
 
     endif()
 
+    message(WARNING "${FUBUKI_PROJECT}_${current_project} links with: ")
+
+    foreach(lib IN ITEMS ${fubuki_target_PUBLIC_LINK})
+        get_target_property(lib_type ${lib} TYPE)
+        message(WARNING "    (PUBLIC) ${lib} (${lib_type}) $<TARGET_FILE:${lib}>)")
+    endforeach()
+
+    foreach(lib IN ITEMS ${fubuki_target_PRIVATE_LINK})
+        get_target_property(lib_type ${lib} TYPE)
+        message(WARNING "    (PRIVATE) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
+    endforeach()
+
+    foreach(lib IN ITEMS ${fubuki_target_SYSTEM_PUBLIC_LINK})
+        get_target_property(lib_type ${lib} TYPE)
+        message(WARNING "    (SYSTEM PUBLIC) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
+    endforeach()
+
+    foreach(lib IN ITEMS ${fubuki_target_SYSTEM_PRIVATE_LINK})
+        get_target_property(lib_type ${lib} TYPE)
+        message(WARNING "    (SYSTEM PRIVATE) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
+    endforeach()
+
     if(${${FUBUKI_PROJECT}_INSTALLATION})
         install(
             TARGETS ${FUBUKI_PROJECT}_${current_project}
@@ -617,13 +635,13 @@ macro(fubuki_add_target)
             INCLUDES DESTINATION ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}
         )
 
-
         if(FUBUKI_VERBOSE_BUILD)
             add_custom_command(
                 TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${FUBUKI_PROJECT}_${current_project} installation: copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>"
                 COMMAND_EXPAND_LISTS
             )
+
         endif()
 
         add_custom_command(
@@ -724,48 +742,7 @@ endmacro() # fubuki_add_executable
 # prerequisites: fubuki_setup must have been called before.
 #
 macro(fubuki_add_test)
-
-    #----------------------------------------------------------------
-    # Arguments
-
-    set(fubuki_add_test_optional_args_identifiers)
-
-    set(fubuki_add_test_single_value_args_identifiers)
-
-    set(fubuki_add_test_multi_value_args_identifiers
-        NAME
-        PUBLIC_DEPENDENCIES
-        PRIVATE_DEPENDENCIES
-        HEADERS
-        SOURCES
-        PUBLIC_LINK
-        PRIVATE_LINK
-        SYSTEM_PUBLIC_LINK
-        SYSTEM_PRIVATE_LINK
-    )
-
-    cmake_parse_arguments(fubuki_test
-                          "${fubuki_add_test_optional_args_identifiers}"
-                          "${fubuki_add_test_single_value_args_identifiers}"
-                          "${fubuki_add_test_multi_value_args_identifiers}"
-                          ${ARGN})
-
-
-    #----------------------------------------------------------------
-    # Target
-
-    fubuki_add_target(NAME "${fubuki_test_NAME}"
-                      TYPE "TEST"
-                      PUBLIC_DEPENDENCIES "${fubuki_test_PUBLIC_DEPENDENCIES}"
-                      PRIVATE_DEPENDENCIES "${fubuki_test_PRIVATE_DEPENDENCIES}"
-                      HEADERS "${fubuki_test_HEADERS}"
-                      SOURCES "${fubuki_test_SOURCES}"
-                      PUBLIC_LINK "${fubuki_test_PUBLIC_LINK}"
-                      PRIVATE_LINK "${fubuki_test_PRIVATE_LINK}"
-                      SYSTEM_PUBLIC_LINK "${fubuki_test_SYSTEM_PUBLIC_LINK}"
-                      SYSTEM_PRIVATE_LINK "${fubuki_test_SYSTEM_PRIVATE_LINK};GTest::gtest_main;GTest::gmock"
-                    )
-
+    fubuki_add_target(TYPE "TEST" ${ARGN})
 endmacro() # fubuki_add_test
 
 #------------------------------------------------------------------------------
