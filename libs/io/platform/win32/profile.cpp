@@ -32,8 +32,11 @@
 
 #include "io/platform/win32/error.hpp"
 
-#include <synchapi.h>
+// clang-format off
+// The order matters for MSVC
 #include <windows.h>
+#include <synchapi.h>
+// clang-format on
 
 namespace fubuki::io::platform::win32
 {
