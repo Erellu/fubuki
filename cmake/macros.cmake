@@ -432,6 +432,8 @@ macro(fubuki_add_target)
                                  "components"
                                  "public_deps"
                                  "private_deps"
+                                 "fubuki_target_source_file"
+                                 "fubuki_target_source_file_file_lang"
                            TYPE AUTHOR_WARNING)
 
     #----------------------------------------------------------------
@@ -606,6 +608,20 @@ macro(fubuki_add_target)
 
     # Target warnings
     target_compile_options(${FUBUKI_PROJECT}_${current_project} PRIVATE ${FUBUKI_WARNINGS})
+
+    # CUDA
+    if(UNIX)
+        foreach(fubuki_target_source_file ${fubuki_target_SOURCES})
+            get_source_file_property(fubuki_target_source_file_file_lang ${fubuki_target_source_file} LANGUAGE)
+            # CUDA generates intermediate C code that uses GCC extensions on Linux and produces errors with
+            # -Wpedantic, which is enabled by Fubuki
+            if("${fubuki_target_source_file_file_lang}" STREQUAL "CUDA")
+                set_source_files_properties(${fubuki_target_source_file} PROPERTIES COMPILE_FLAGS "-Wno-pedantic")
+            endif()
+        endforeach()
+        unset(fubuki_target_source_file)
+        unset(fubuki_target_source_file_file_lang)
+    endif()
 
     #----------------------------------------------------------------
     # Install
