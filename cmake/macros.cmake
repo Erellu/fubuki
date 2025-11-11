@@ -38,7 +38,67 @@ function(fubuki_target_link_libraries_system target)
 endfunction(fubuki_target_link_libraries_system)
 
 #------------------------------------------------------------------------------
-# Issues a message(WARNING) if an identifier exists in the current scope.
+# Installs DLLs of CMake targets linked to a target.
+# Requires a call to fubuki_setup.
+########################################
+# param: TARGET - The target name.
+# param: LIBS  - The libraries to install.
+
+function(fubuki_install_dlls_of)
+
+    cmake_parse_arguments(fubuki_install_dlls_of
+                          "" # Optional
+                          "TARGET" # Single values
+                          "LIBS" # Multiple values
+                          ${ARGN})
+
+    if(FUBUKI_VERBOSE_BUILD)
+        message(STATUS "[Fubuki]: installing deps of ${fubuki_install_dlls_of_TARGET} (${fubuki_install_dlls_of_LIBS})")
+    endif()
+
+    foreach(lib IN ITEMS ${fubuki_install_dlls_of_LIBS})
+        get_target_property(lib_type ${lib} TYPE)
+        if(NOT ${lib_type} STREQUAL "STATIC_LIBRARY")
+            if(FUBUKI_VERBOSE_BUILD)
+
+                if(FUBUKI_VERBOSE_BUILD)
+                    message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed.")
+                endif()
+
+                add_custom_command(
+                    TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy_if_different $<TARGET_FILE:${lib}> $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}>"
+                    COMMAND_EXPAND_LISTS
+                )
+
+                add_custom_command(
+                    TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy $<TARGET_FILE:${lib}> ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}"
+                    COMMAND_EXPAND_LISTS
+                )
+            endif()
+
+            add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                                       $<TARGET_FILE:${lib}>
+                                       $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}>)
+
+            add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy
+                                       $<TARGET_FILE:${lib}>
+                                       ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+        else()
+            if(FUBUKI_VERBOSE_BUILD)
+                message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} is a static library and WILL NOT be installed.")
+            endif()
+        endif()
+
+    endforeach()
+
+endfunction()
+
+#------------------------------------------------------------------------------
+# Issues a message if an identifier exists in the current scope.
 ########################################
 # param: NAMES - The names to check, as a list of strings
 # param: TYPE  - The type of the message, directlty forwarded to CMake's message().
@@ -603,29 +663,14 @@ macro(fubuki_add_target)
 
     endif()
 
-    message(WARNING "${FUBUKI_PROJECT}_${current_project} links with: ")
-
-    foreach(lib IN ITEMS ${fubuki_target_PUBLIC_LINK})
-        get_target_property(lib_type ${lib} TYPE)
-        message(WARNING "    (PUBLIC) ${lib} (${lib_type}) $<TARGET_FILE:${lib}>)")
-    endforeach()
-
-    foreach(lib IN ITEMS ${fubuki_target_PRIVATE_LINK})
-        get_target_property(lib_type ${lib} TYPE)
-        message(WARNING "    (PRIVATE) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
-    endforeach()
-
-    foreach(lib IN ITEMS ${fubuki_target_SYSTEM_PUBLIC_LINK})
-        get_target_property(lib_type ${lib} TYPE)
-        message(WARNING "    (SYSTEM PUBLIC) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
-    endforeach()
-
-    foreach(lib IN ITEMS ${fubuki_target_SYSTEM_PRIVATE_LINK})
-        get_target_property(lib_type ${lib} TYPE)
-        message(WARNING "    (SYSTEM PRIVATE) ${lib} (${lib_type} $<TARGET_FILE:${lib}>)")
-    endforeach()
-
     if(${${FUBUKI_PROJECT}_INSTALLATION})
+
+        fubuki_install_dlls_of(TARGET ${FUBUKI_PROJECT}_${current_project}
+                               LIBS ${fubuki_target_PUBLIC_LINK}
+                                    ${fubuki_target_PRIVATE_LINK}
+                                    ${fubuki_target_SYSTEM_PUBLIC_LINK}
+                                    ${fubuki_target_SYSTEM_PRIVATE_LINK})
+
         install(
             TARGETS ${FUBUKI_PROJECT}_${current_project}
             EXPORT ${${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME}
@@ -641,12 +686,11 @@ macro(fubuki_add_target)
                 COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${FUBUKI_PROJECT}_${current_project} installation: copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>"
                 COMMAND_EXPAND_LISTS
             )
-
         endif()
 
         add_custom_command(
             TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>
+            COMMAND ${CMAKE_COMMAND} -E copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>
             COMMAND_EXPAND_LISTS
         )
     endif()

@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.26)
 project(fubuki_dependencies LANGUAGES CXX)
 
 fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" AUTHOR_WARNING)
@@ -143,7 +144,7 @@ set(ENABLE_GLSLANG_WEBMIN_DEVEL OFF)
 set(ENABLE_EMSCRIPTEN_SINGLE_FILE OFF)
 set(ENABLE_EMSCRIPTEN_ENVIRONMENT_NODE OFF)
 set(ENABLE_HLSL ON)
-set(ENABLE_RTTI OFF)
+set(ENABLE_RTTI ON) # Not necessarily used, but emits a warning with MSVC because it overrides /GR with /GR-
 set(ENABLE_EXCEPTIONS OFF)
 set(ENABLE_OPT ON)
 set(GLSLANG_TESTS OFF)
