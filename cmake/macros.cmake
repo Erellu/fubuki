@@ -61,13 +61,9 @@ function(fubuki_install_dlls_of)
         if(NOT ${lib_type} STREQUAL "STATIC_LIBRARY" AND NOT ${lib_type} STREQUAL "INTERFACE_LIBRARY")
             if(FUBUKI_VERBOSE_BUILD)
 
-                message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed (type: ${lib_type}).")
-
-                add_custom_command(
-                    TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy_if_different $<TARGET_FILE:${lib}> $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}>"
-                    COMMAND_EXPAND_LISTS
-                )
+                if(FUBUKI_VERBOSE_BUILD)
+                    message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed (type: ${lib_type}).")
+                endif()
 
                 add_custom_command(
                     TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
@@ -77,9 +73,8 @@ function(fubuki_install_dlls_of)
             endif()
 
             add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                                       $<TARGET_FILE:${lib}>
-                                       $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}>)
+                               COMMAND ${CMAKE_COMMAND} -E make_directory
+                                       ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
 
             add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
                                COMMAND ${CMAKE_COMMAND} -E copy
@@ -677,7 +672,7 @@ macro(fubuki_add_target)
                 ${FUBUKI_PROJECT}_${current_project}
                 PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests/>
             )
-    endif()
+        endif()
 
     endif()
 
@@ -705,6 +700,10 @@ macro(fubuki_add_target)
                 COMMAND_EXPAND_LISTS
             )
         endif()
+
+        add_custom_command(TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E make_directory
+                                   ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
 
         add_custom_command(
             TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
