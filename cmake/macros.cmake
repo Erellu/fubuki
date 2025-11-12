@@ -58,12 +58,10 @@ function(fubuki_install_dlls_of)
 
     foreach(lib IN ITEMS ${fubuki_install_dlls_of_LIBS})
         get_target_property(lib_type ${lib} TYPE)
-        if(NOT ${lib_type} STREQUAL "STATIC_LIBRARY")
+        if(NOT ${lib_type} STREQUAL "STATIC_LIBRARY" AND NOT ${lib_type} STREQUAL "INTERFACE_LIBRARY")
             if(FUBUKI_VERBOSE_BUILD)
 
-                if(FUBUKI_VERBOSE_BUILD)
-                    message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed.")
-                endif()
+                message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed (type: ${lib_type}).")
 
                 add_custom_command(
                     TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
@@ -670,12 +668,16 @@ macro(fubuki_add_target)
                 set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_components "${components};${current_project}")
             endif()
         elseif("${path_root}" STREQUAL "tutorials")
-            # Header locations
             target_include_directories(
                 ${FUBUKI_PROJECT}_${current_project}
                 PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tutorials/>
             )
-        endif()
+        elseif("${path_root}" STREQUAL "tests")
+            target_include_directories(
+                ${FUBUKI_PROJECT}_${current_project}
+                PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests/>
+            )
+    endif()
 
     endif()
 
