@@ -58,7 +58,7 @@ namespace detail
 std::expected<AHardwareBuffer*, api_call_info>
 get_memory_android_hardware_buffer(const functions& ext, device_handle device, const VkMemoryGetAndroidHardwareBufferInfoANDROID& info) noexcept
 {
-    AHardwareBuffer* result = nullptr;
+    AHardwareBuffer* result = nullptr; // NOLINT(misc-const-correctness): false positive
 
     if(const auto check = fubuki_validate(validate_by::expected, fubuki::invoke<"vkGetMemoryAndroidHardwareBufferANDROID">(ext, device.vk, std::addressof(info), std::addressof(result))); not check)
     {

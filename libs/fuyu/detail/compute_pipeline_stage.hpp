@@ -146,7 +146,7 @@ template<traits::stage_extension extension>
         result.stage.pSpecializationInfo = std::addressof(*result.specialisation);
     }
 
-    return result;
+    return result; // NOLINT(clang-analyzer-core.StackAddressEscape): false positive
 }
 
 [[nodiscard]] inline std::expected<stage::underlying_type, api_call_info> to_underlying(device_cref d, const stage& s)
