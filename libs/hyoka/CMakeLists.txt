@@ -20,6 +20,7 @@ fubuki_add_library(NAME hyoka
                       PUBLIC_DEPENDENCIES "core"
                       PRIVATE_DEPENDENCIES ""
                       HEADERS "shader/compile.hpp"
+                      "shader/detail/glslang.hpp"
                       SOURCES "shader/compile.cpp"
                       PUBLIC_LINK "Vulkan::Vulkan"
                       PRIVATE_LINK ""

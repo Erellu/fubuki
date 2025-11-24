@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSD 2-Clause License
  *
  * Copyright (c) 2025, Erwan DUHAMEL
@@ -72,7 +72,7 @@ TEST(opaque_ptr, address)
     {
         auto unique_ptr = std::make_unique<int>();
 
-        void* address = unique_ptr.get();
+        void* const address = unique_ptr.get(); // NOLINT(misc-const-correctness): that's the test
 
         auto ptr = fubuki::make_opaque(std::move(unique_ptr));
         STATIC_EXPECT_TRUE((std::is_same_v<decltype(ptr), opaque_unique_ptr<void>>) );
@@ -107,7 +107,7 @@ TEST(opaque_ptr, deletion)
         {
             auto unique_ptr = std::make_unique<meow>(i);
 
-            void* address = unique_ptr.get();
+            void* const address = unique_ptr.get(); // NOLINT(misc-const-correctness): that's the test
 
             auto ptr = fubuki::make_opaque(std::move(unique_ptr));
             STATIC_EXPECT_TRUE((std::is_same_v<decltype(ptr), opaque_unique_ptr<void>>) );

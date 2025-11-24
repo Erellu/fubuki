@@ -871,7 +871,7 @@ TEST(move_only_function, nullable)
         EXPECT_NE(fn, nullptr);
 
         {
-            decltype(detail::function)* p = {};
+            decltype(detail::function)* p = {}; // NOLINT(misc-const-correctness): that's the test
             fn                            = p;
             EXPECT_FALSE(fn);
         }
