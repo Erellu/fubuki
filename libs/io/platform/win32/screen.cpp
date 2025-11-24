@@ -46,13 +46,6 @@ namespace
 namespace globals
 {
 
-/// Last collected information about the available screens
-[[nodiscard]] auto& collected_info()
-{
-    static small_vector<properties, properties::typical_monitor_count> s;
-    return s;
-}
-
 [[nodiscard]] auto& sync()
 {
     static std::mutex m;
@@ -62,9 +55,10 @@ namespace globals
 } // namespace globals
 
 /// Proc function called by EnumDisplayMonitors. Fills globals::collected_info.
-BOOL CALLBACK proc(HMONITOR /*monitor*/, HDC /*device_context*/, LPRECT rect, LPARAM) noexcept
+BOOL CALLBACK proc(HMONITOR /*monitor*/, HDC /*device_context*/, LPRECT rect, LPARAM screens_ptr) noexcept
 {
-    auto& screens = globals::collected_info();
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
+    auto* const screens = reinterpret_cast<small_vector<properties, properties::typical_monitor_count>*>(screens_ptr);
 
     const auto x = rect->left;
     const auto y = rect->top;
@@ -82,7 +76,7 @@ BOOL CALLBACK proc(HMONITOR /*monitor*/, HDC /*device_context*/, LPRECT rect, LP
 
     i.configurations.reserve(15); // Completely arbitrary // NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
-    screens.push_back(std::move(i));
+    screens->push_back(std::move(i));
 
     return true;
 }
@@ -103,10 +97,10 @@ std::expected<small_vector<properties, properties::typical_monitor_count>, error
 
     const std::scoped_lock<std::mutex> lock{globals::sync()};
 
-    // Clear previous information in case user plugged monitor on the fly
-    globals::collected_info().clear();
+    small_vector<properties, properties::typical_monitor_count> s;
 
-    if(EnumDisplayMonitors(nullptr, nullptr, proc, 0))
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, performance-no-int-to-ptr)
+    if(EnumDisplayMonitors(nullptr, nullptr, proc, reinterpret_cast<LPARAM>(std::addressof(s))))
     {
         // Taken from https://stackoverflow.com/a/60229570
         // Code available under the CC BY-SA license (https://creativecommons.org/licenses/by-sa/4.0/)
@@ -133,7 +127,9 @@ std::expected<small_vector<properties, properties::typical_monitor_count>, error
                         break;
                     }
 
-                    auto& i = globals::collected_info().at(static_cast<std::size_t>(device_index));
+                    fubuki_assert(static_cast<std::size_t>(device_index) < s.size(), "Internal error");
+
+                    auto& i = s[static_cast<std::size_t>(device_index)];
 
                     i.device = static_cast<std::uint32_t>(device_index);
                     i.name   = make_display_name(device);
@@ -146,7 +142,7 @@ std::expected<small_vector<properties, properties::typical_monitor_count>, error
                     DWORD mode_counter = 0;
                     while(EnumDisplaySettings(static_cast<LPCSTR>(device.DeviceName), mode_counter, &mode))
                     {
-                        auto& i = globals::collected_info().at(static_cast<std::size_t>(device_index));
+                        auto& i = s[static_cast<std::size_t>(device_index)];
 
                         const dimension2d dim
                             = {.width = static_cast<std::int32_t>(mode.dmPelsWidth), .height = static_cast<std::int32_t>(mode.dmPelsWidth)};
@@ -170,7 +166,7 @@ std::expected<small_vector<properties, properties::typical_monitor_count>, error
         }}};
     }
 
-    return globals::collected_info();
+    return s;
 }
 
 } // namespace fubuki::io::platform::win32::screen
