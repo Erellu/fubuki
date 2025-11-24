@@ -692,7 +692,7 @@ endmacro() # fubuki_add_executable
 
 #------------------------------------------------------------------------------
 # Creates a test target from the sources given, links it to the libraries
-# given (also adds GTest::gtest_main), and adds it to the test set.
+# given (also adds GTest::gtest), and adds it to the test set.
 ########################################
 # param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically.
 #                               EXPORT_NAME property is set to ${NAME}.
@@ -748,7 +748,7 @@ macro(fubuki_add_test)
                       PUBLIC_LINK "${fubuki_test_PUBLIC_LINK}"
                       PRIVATE_LINK "${fubuki_test_PRIVATE_LINK}"
                       SYSTEM_PUBLIC_LINK "${fubuki_test_SYSTEM_PUBLIC_LINK}"
-                      SYSTEM_PRIVATE_LINK "${fubuki_test_SYSTEM_PRIVATE_LINK};GTest::gtest_main"
+                      SYSTEM_PRIVATE_LINK "${fubuki_test_SYSTEM_PRIVATE_LINK};GTest::gtest_main;GTest::gmock"
                     )
 
 endmacro() # fubuki_add_test

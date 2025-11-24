@@ -10,6 +10,7 @@ if(WIN32)
         "win32/event_loop.hpp"
         "win32/keyboard.hpp"
         "win32/mouse.hpp"
+        "win32/profile.hpp"
         "win32/screen.hpp"
         "win32/send_event.hpp"
         "win32/window.hpp"
@@ -22,6 +23,7 @@ if(WIN32)
     set(fubuki_io_platform_sources
         "win32/event_loop.cpp"
         "win32/screen.cpp"
+        "win32/profile.cpp"
         "win32/window.cpp"
         "win32/window_data.cpp"
         "win32/window_registry.cpp"
@@ -50,6 +52,7 @@ elseif(UNIX)
         "linux/file_descriptor.hpp"
         "linux/keyboard.hpp"
         "linux/mouse.hpp"
+        "linux/profile.hpp"
         "linux/scoped_mmap.hpp"
         "linux/screen.hpp"
         "linux/send_event.hpp"
@@ -122,6 +125,7 @@ elseif(UNIX)
     set(fubuki_io_platform_sources
         "linux/fd_timer.cpp"
         "linux/file_descriptor.cpp"
+        "linux/profile.cpp"
         "linux/scoped_mmap.cpp"
         "linux/screen.cpp"
         "linux/window_registry.cpp"
@@ -181,6 +185,7 @@ fubuki_add_library(NAME io_platform
                               "keyboard_key.hpp"
                               "mouse_button.hpp"
                               "mouse_state.hpp"
+                              "profile_data.hpp"
                               "screen_properties.hpp"
 
                               "event/dispatcher.hpp"
