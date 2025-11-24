@@ -222,6 +222,7 @@ endif()
 if(FUBUKI_BUILD_TESTS)
     set(gtest_force_shared_crt ON)
     set(gtest_hide_internal_symbols ON)
+    set(BUILD_GMOCK ON)
     set(INSTALL_GTEST OFF)
     set(GTEST_HAS_ABSL OFF)
 

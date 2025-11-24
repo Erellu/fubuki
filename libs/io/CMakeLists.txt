@@ -16,6 +16,7 @@ if(NOT ${FUBUKI_NO_IO})
                                   "event.hpp"
                                   "keyboard.hpp"
                                   "mouse.hpp"
+                                  "profile.hpp"
                                   "screen.hpp"
                                   "window.hpp"
 
@@ -31,6 +32,7 @@ if(NOT ${FUBUKI_NO_IO})
                           SOURCES "display.hpp"
                                   "keyboard.cpp"
                                   "mouse.cpp"
+                                  "profile.cpp"
                                   "screen.cpp"
                                   "window.cpp"
 
