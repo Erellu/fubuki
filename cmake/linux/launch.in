@@ -1,0 +1,25 @@
+#! /bin/bash
+
+EXECUTABLES=("@FUBUKI_PROJECT_EXECUTABLES@")
+THIS_SCRIPT_LOCATION=$(dirname "$(readlink -f "$0")")
+@FUBUKI_PROJECT@_INSTALL_LOCATION="$(dirname "$THIS_SCRIPT_LOCATION")"
+
+if [ $# -eq 0 ] || [ -z "$1" ]; then #No arguments supplied
+    echo "At least one argument, specifying the executable, is required. Valid values: $EXECUTABLES"
+    exit 1
+else
+    requested_executable="$1"
+
+    # Source - https://stackoverflow.com/a/15394738
+    # Posted by Keegan, modified by community. See post 'Timeline' for change history
+    # Retrieved 2026-01-21, License - CC BY-SA 4.0
+
+    if [[ " ${EXECUTABLES[*]} " =~ " ${requested_executable} " ]] then
+        LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$@FUBUKI_PROJECT@_INSTALL_LOCATION"/lib/
+        shift # The first argument is the executable name, remove it
+        exec "$@FUBUKI_PROJECT@_INSTALL_LOCATION/bin/@FUBUKI_PROJECT@_$requested_executable" "$@"
+    else
+        echo "Invalid executable '$requested_executable'. Expected one of $EXECUTABLES"
+        exit 1
+    fi
+fi

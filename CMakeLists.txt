@@ -17,10 +17,17 @@ endif()
 
 option(FUBUKI_BUILD_TESTS "Build Fubuki unit tests." OFF)
 option(FUBUKI_BUILD_TUTORIALS "Build Fubuki tutorials." ON)
-option(FUBUKI_INSTALL "Install Fubuki to directory set in CMAKE_INSTALL_PREFIX." ON)
 option(FUBUKI_NO_IO "Do not build fubuki::io. This also disables tutorials and tests that depend on this target." OFF)
 option(FUBUKI_SKIP_GENERATION "Skip code generations processes. Put it on OFF when changing the Vulkan SDK version." ON)
 option(FUBUKI_VERBOSE_BUILD "Display detailed messages when configuring Fubuki." OFF)
+
+set(FUBUKI_INSTALL
+    "PACKAGE"
+    CACHE
+    STRING
+    "Installation type (PACKAGE, BINARIES, OFF). PACKAGE: Install as a package, with headers and CMake target files. BINARIES: install only executables and DLLs. OFF: don't install. If not OFF, will install to CMAKE_INSTALL_PREFIX."
+)
+set_property(CACHE FUBUKI_INSTALL PROPERTY STRINGS "PACKAGE;BINARIES;OFF")
 
 mark_as_advanced(FUBUKI_SKIP_GENERATION)
 
@@ -41,7 +48,7 @@ endif()
 project(fubuki
         LANGUAGES CXX C
         VERSION 1.0.0
-        DESCRIPTION "Fubuki is a low-level general-purpose cross-platform engine written in C++23 for and with Vulkan."
+        DESCRIPTION "Idiomatic C++23 cross-platform composable abstraction framework for Vulkan and low-level graphics."
         HOMEPAGE_URL "https://github.com/Erellu/fubuki"
 )
 
@@ -146,4 +153,4 @@ if(FUBUKI_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-fubuki_finalise()
+fubuki_finalise(CONFIG_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/config.cmake.in UNIX_LAUNCH_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/cmake/linux/launch.in)

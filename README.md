@@ -107,14 +107,14 @@ git submodule update
 
 ### CMake options
 
-| Name                     | Description                                                                                                                                                                            | Default |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `FUBUKI_BUILD_TESTS`     | Build Fubuki unit tests                                                                                                                                                                | `OFF`   |
-| `FUBUKI_BUILD_TUTORIALS` | Build Fubuki tutorials.                                                                                                                                                                | `ON`    |
-| `FUBUKI_INSTALL`         | Install Fubuki to directory set in `CMAKE_INSTALL_PREFIX`.                                                                                                                             | `ON`    |
-| `FUBUKI_NO_IO`           | Do not build `fubuki::io` (use this when building Fubuki for a platform `fubuki::io` doesn't support, such as OSX). This also disables tutorials and tests that depend on this target. | `OFF`   |
-| `FUBUKI_SKIP_GENERATION` | (Dev) Skip code generations processes. Put it on `OFF` when changing the Vulkan SDK version.                                                                                           | `ON`    |
-| `FUBUKI_VERBOSE_BUILD`   | (Dev) Display detailed messages when configuring Fubuki.                                                                                                                               | `OFF`   |
+| Name                     | Description                                                                                                                                                                                                                                        | Default   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `FUBUKI_BUILD_TESTS`     | Build Fubuki unit tests                                                                                                                                                                                                                            | `OFF`     |
+| `FUBUKI_BUILD_TUTORIALS` | Build Fubuki tutorials.                                                                                                                                                                                                                            | `ON`      |
+| `FUBUKI_INSTALL`         | Installation type (`PACKAGE`, `BINARIES`, `OFF`). `PACKAGE`: Install as a package, with headers and CMake target files. `BINARIES`: install only executables and DLLs. `OFF`: don't install. If not `OFF`, will install to `CMAKE_INSTALL_PREFIX`. | `PACKAGE` | 
+| `FUBUKI_NO_IO`           | Do not build `fubuki::io` (use this when building Fubuki for a platform `fubuki::io` doesn't support, such as OSX). This also disables tutorials and tests that depend on this target.                                                             | `OFF`     |
+| `FUBUKI_SKIP_GENERATION` | (Dev) Skip code generations processes. Put it on `OFF` when changing the Vulkan SDK version.                                                                                                                                                       | `ON`      |
+| `FUBUKI_VERBOSE_BUILD`   | (Dev) Display detailed messages when configuring Fubuki.                                                                                                                                                                                           | `OFF`     |
 
 ## Installation
 
