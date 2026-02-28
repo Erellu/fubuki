@@ -1,60 +1,105 @@
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Links against a library as if it were a SYSTEM library.
 # From https://stackoverflow.com/a/52136398
 # License: CC BY-SA 4.0
-########################################
+# #######################################
 # param: target - Targets to link
 #
 # option: PUBLIC | PRIVATE | INTEFACE - Scope of the link
+# ~~~
 function(fubuki_target_link_libraries_system target)
-  set(options PRIVATE PUBLIC INTERFACE)
-  cmake_parse_arguments(TLLS "${options}" "" "" ${ARGN})
-  foreach(op ${options})
-    if(TLLS_${op})
-      set(scope ${op})
-    endif()
-  endforeach(op)
-  set(libs ${TLLS_UNPARSED_ARGUMENTS})
-
-  foreach(lib ${libs})
-    get_target_property(lib_include_dirs ${lib} INTERFACE_INCLUDE_DIRECTORIES)
-    if(lib_include_dirs)
-      if(scope)
-        target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
-      else()
-        target_include_directories(${target} SYSTEM PRIVATE ${lib_include_dirs})
-      endif()
-    else()
-        if(${FUBUKI_VERBOSE_BUILD})
-            message("Warning: ${lib} doesn't set INTERFACE_INCLUDE_DIRECTORIES. No include_directories set.")
+    set(options PRIVATE PUBLIC INTERFACE)
+    cmake_parse_arguments(TLLS "${options}" "" "" ${ARGN})
+    foreach(op ${options})
+        if(TLLS_${op})
+            set(scope ${op})
         endif()
-    endif()
-    if(scope)
-      target_link_libraries(${target} ${scope} ${lib})
-    else()
-      target_link_libraries(${target} ${lib})
-    endif()
-  endforeach()
+    endforeach(op)
+    set(libs ${TLLS_UNPARSED_ARGUMENTS})
+
+    foreach(lib ${libs})
+        get_target_property(lib_include_dirs ${lib} INTERFACE_INCLUDE_DIRECTORIES)
+        if(lib_include_dirs)
+            if(scope)
+                target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
+            else()
+                target_include_directories(${target} SYSTEM PRIVATE ${lib_include_dirs})
+            endif()
+        else()
+            if(${FUBUKI_VERBOSE_BUILD})
+                message("Warning: ${lib} doesn't set INTERFACE_INCLUDE_DIRECTORIES. No include_directories set.")
+            endif()
+        endif()
+        if(scope)
+            target_link_libraries(${target} ${scope} ${lib})
+        else()
+            target_link_libraries(${target} ${lib})
+        endif()
+    endforeach()
 endfunction(fubuki_target_link_libraries_system)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Installs DLLs of CMake targets linked to a target.
 # Requires a call to fubuki_setup.
-########################################
+# #######################################
 # param: TARGET - The target name.
 # param: LIBS  - The libraries to install.
-
+# ~~~
 function(fubuki_install_dlls_of)
 
-    cmake_parse_arguments(fubuki_install_dlls_of
-                          "" # Optional
-                          "TARGET" # Single values
-                          "LIBS" # Multiple values
-                          ${ARGN})
+    if(NOT FUBUKI_SETUP_PROJECT_LIST)
+        message(FATAL_ERROR "fubuki_setup(...) has no active project.")
+    endif()
+
+    list(GET FUBUKI_SETUP_PROJECT_LIST 0 FUBUKI_PROJECT)
+
+    cmake_parse_arguments(
+        fubuki_install_dlls_of
+        "" # Options
+        "TARGET" # Single values
+        "LIBS" # Multiple values
+        ${ARGN})
 
     if(FUBUKI_VERBOSE_BUILD)
         message(STATUS "[Fubuki]: installing deps of ${fubuki_install_dlls_of_TARGET} (${fubuki_install_dlls_of_LIBS})")
     endif()
+
+    if(WIN32)
+        if(FUBUKI_VERBOSE_BUILD)
+            add_custom_command(
+                TARGET ${fubuki_install_dlls_of_TARGET}
+                POST_BUILD
+                COMMAND
+                    ${CMAKE_COMMAND} -E echo
+                    "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy -t $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}> $<TARGET_RUNTIME_DLLS:${fubuki_install_dlls_of_TARGET}>"
+                COMMAND_EXPAND_LISTS)
+        endif()
+
+        add_custom_command(
+            TARGET ${fubuki_install_dlls_of_TARGET}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${fubuki_install_dlls_of_TARGET}>
+                    $<TARGET_RUNTIME_DLLS:${fubuki_install_dlls_of_TARGET}>
+            COMMAND_EXPAND_LISTS)
+    endif()
+
+    # Best effort for other things: copy Dlls of CMake targets we link with and add their search path to perform an install(RUNTIME_DEPENDENCIES ...
+    # DIRECTORIES ...)
+
+    set(target_directory "")
+
+    if(WIN32)
+        set(target_directory ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+    elseif(UNIX)
+        set(target_directory ${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION})
+    else()
+        message(WARNING "fubuki_install_dlls_of not supported on this platform.")
+        return()
+    endif()
+
+    set(all_dependencies_directories "${${FUBUKI_PROJECT}_WIN32_DLLS_ADDITIONAL_PATHS}")
 
     foreach(lib IN ITEMS ${fubuki_install_dlls_of_LIBS})
         get_target_property(lib_type ${lib} TYPE)
@@ -62,63 +107,120 @@ function(fubuki_install_dlls_of)
             if(FUBUKI_VERBOSE_BUILD)
 
                 if(FUBUKI_VERBOSE_BUILD)
-                    message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed (type: ${lib_type}).")
+                    message(
+                        STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} WILL be installed (type: ${lib_type})."
+                    )
                 endif()
 
-                add_custom_command(
-                    TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy $<TARGET_FILE:${lib}> ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}"
-                    COMMAND_EXPAND_LISTS
-                )
+                if(NOT ${lib_type} STREQUAL "UNKNOWN_LIBRARY")
+                    add_custom_command(
+                        TARGET ${fubuki_install_dlls_of_TARGET}
+                        POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E echo
+                                "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: copy $<TARGET_FILE:${lib}> ${target_directory}"
+                        COMMAND_EXPAND_LISTS)
+                endif()
             endif()
 
-            add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E make_directory
-                                       ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+            if(NOT ${lib_type} STREQUAL "UNKNOWN_LIBRARY")
+                add_custom_command(
+                    TARGET ${fubuki_install_dlls_of_TARGET}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${target_directory})
 
-            add_custom_command(TARGET ${fubuki_install_dlls_of_TARGET} POST_BUILD
-                               COMMAND ${CMAKE_COMMAND} -E copy
-                                       $<TARGET_FILE:${lib}>
-                                       ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+                add_custom_command(
+                    TARGET ${fubuki_install_dlls_of_TARGET}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${lib}> ${target_directory})
+            endif()
+
+            set(all_dependencies_directories "${all_dependencies_directories};$<TARGET_FILE_DIR:${lib}>")
         else()
             if(FUBUKI_VERBOSE_BUILD)
-                message(STATUS "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} is a static library and WILL NOT be installed.")
+                message(
+                    STATUS
+                        "[Fubuki:] Dependency '${lib}' that links with ${fubuki_install_dlls_of_TARGET} is not a shared library and will NOT be installed."
+                )
             endif()
         endif()
 
     endforeach()
 
+    if(FUBUKI_VERBOSE_BUILD)
+
+        message(
+            STATUS
+                "[Fubuki:] Target '${fubuki_install_dlls_of_TARGET}' install(RUNTIME_DEPENDENCIES) DIRECTORIES will have the following arguments: ${all_dependencies_directories}"
+        )
+
+        add_custom_command(
+            TARGET ${fubuki_install_dlls_of_TARGET}
+            POST_BUILD
+            COMMAND
+                ${CMAKE_COMMAND} -E echo
+                "[Fubuki]: ${fubuki_install_dlls_of_TARGET} installation: install RUNTIME_DEPENDENCIES DIRECTORIES ${all_dependencies_directories}"
+            COMMAND_EXPAND_LISTS)
+    endif()
+
+    if(WIN32)
+        install(
+            TARGETS ${fubuki_install_dlls_of_TARGET}
+                    RUNTIME_DEPENDENCIES
+                    PRE_EXCLUDE_REGEXES
+                    "api-ms-"
+                    "ext-ms-"
+                    POST_EXCLUDE_REGEXES
+                    ".*system32/.*\\.dll"
+                    DIRECTORIES
+                    ${all_dependencies_directories})
+    elseif(UNIX)
+        install(TARGETS ${fubuki_install_dlls_of_TARGET} RUNTIME_DEPENDENCIES)
+    endif()
+
+    # The soft way: let CMake resolve everything and hopefully with the above it will be enough
+    install(FILES $<TARGET_RUNTIME_DLLS:${fubuki_install_dlls_of_TARGET}> TYPE BIN)
+
 endfunction()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Issues a message if an identifier exists in the current scope.
-########################################
+# #######################################
 # param: NAMES - The names to check, as a list of strings
 # param: TYPE  - The type of the message, directlty forwarded to CMake's message().
-
-macro(fubuki_warn_if_defined)
-  cmake_parse_arguments(fubuki_warn_if_defined
-                        "" # Optional
-                        "TYPE" # Single values
-                        "NAMES" # Multiple values
-                        ${ARGN})
+# ~~~
+function(fubuki_warn_if_defined)
+    cmake_parse_arguments(
+        fubuki_warn_if_defined
+        "" # Options
+        "TYPE" # Single values
+        "NAMES" # Multiple values
+        ${ARGN})
 
     foreach(NAME ${fubuki_warn_if_defined_NAMES})
         if(DEFINED ${NAME})
             message(${fubuki_warn_if_defined_TYPE} "The identifier '${NAME}' is already defined in the current scope and may be overriden.")
         endif()
     endforeach()
-endmacro()
+endfunction()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Sets up variables used for the building process (install directory, compiler, etc)
 # WARNING: calling this function twice with different arguments will result in libraries being
 # considered as from different projects, hence installed at different places and in a different export set.
 # You should usually call it only once from the main CMakeLists.txt.
 # If you need to call it twice (for subprojects for example), call fubuki_finalise() first.
-########################################
-# param: NAME         - Name of the current project, as STRING.
-# param: INSTALLATION - Indicates if the project must be installed.
+# #######################################
+# param: NAME                           - Name of the current project, as STRING.
+# param: INSTALLATION                   - Installation type (PACKAGE, BINARIES, OFF).
+#                                         PACKAGE: Install as a package, with headers and CMake target files.
+#                                         BINARIES: install only executables and DLLs.
+#                                         OFF: don't install.
+# param: WIN32_DLLS_ADDITIONAL_PATHS    - Additional locations in which DLLs are searched.
+#                                         Use this for dependencies that install in non-standard locations.
+#                                         Only has an effect on Windows.
+# param: WIN32_DLLS_IGNORE_CMAKE_PREFIX - (Option) Don't add CMAKE_PREFIX_PATH to the DLLs search locations.
 #
 # output: sets the following variables, in which ${NAME} is the value of the NAME argument fubuki_setup:
 #    Variables (constants):
@@ -130,14 +232,16 @@ endmacro()
 #       ${NAME}_INSTALL_PREFIX               - Where the installation is performed.
 #       ${NAME}_INSTALL_RUNTIME_DESTINATION  - Where the binaries are installed.
 #       ${NAME}_INSTALL_ARCHIVE_DESTINATION  - Where the libraries are installed.
-#       ${NAME}_INSTALL_LIBRARY_DESTINATION  - Where the libraries are installed (also).
+#       ${NAME}_INSTALL_LIBRARY_DESTINATION  - Where the libraries are installed (same as INSTALL_ARCHIVE_DESTINATION).
 #       ${NAME}_INSTALL_INCLUDES_DESTINATION - Where the headers are installed.
 #       ${NAME}_INCLUDES_INSTALL_DIR         - Where the headers are installed.
 #       ${NAME}_GENERATED_DIR                - Where the CMake-generated files are put.
 #       ${NAME}_OUTPUT_DIR                   - Where the binaries (.dll/.so, .exe, etc.) are put.
 #
-#       ${NAME}_VERSION_CONFIG               - Name of the CMake version config file.
-#       ${NAME}_PROJECT_CONFIG               - Name of the CMake config file.
+#       ${NAME}_VERSION_CONFIG               - Full path of the CMake version config file.
+#       ${NAME}_PROJECT_CONFIG               - Full path of the CMake config file.
+#
+#       ${NAME}_LAUNCH_SCRIPT                - Full path to the launch script.
 #
 #       ${NAME}_TARGETS_EXPORT_NAME          - Export set for the targets added using fubuki_add_library.
 #       ${NAME}_EXPORT_NAME                  - Name of CMake Targets file.
@@ -145,42 +249,36 @@ endmacro()
 #
 #    Properties:
 #        ${NAME}_components                  - Global property to which target added through fubuki_add_library are added.
+#        ${NAME}_executable                  - Global property to which target added through fubuki_add_executable are added.
+#        ${NAME}_tests                       - Global property to which target added through fubuki_add_test are added.
 #
 # These names are RESERVED and **MUST NOT** be changed manually (read-only access is fine).
-
+# ~~~
 macro(fubuki_setup)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Arguments
 
-    set(fubuki_setup_optional_value_args_identifiers)
+    set(fubuki_setup_option_args_identifiers WIN32_DLLS_IGNORE_CMAKE_PREFIX)
 
-    set(fubuki_setup_single_value_args_identifiers
-        NAME
-        INSTALLATION
-    )
+    set(fubuki_setup_single_value_args_identifiers NAME INSTALLATION)
 
-    set(fubuki_setup_multi_value_args_identifiers)
+    set(fubuki_setup_multi_value_args_identifiers WIN32_DLLS_ADDITIONAL_PATHS)
 
-    cmake_parse_arguments(fubuki_setup
-                          "${fubuki_setup_optional_value_args_identifiers}"
-                          "${fubuki_setup_single_value_args_identifiers}"
-                          "${fubuki_setup_multi_value_args_identifiers}"
-                          ${ARGN})
+    cmake_parse_arguments(fubuki_setup "${fubuki_setup_option_args_identifiers}" "${fubuki_setup_single_value_args_identifiers}"
+                          "${fubuki_setup_multi_value_args_identifiers}" ${ARGN})
 
-    # See https://github.com/schweitzer/modern-cmake-tutorial
-    # https://github.com/IRCAD/modern-cmake-tutorial
-    # From https://github.com/schweitzer/modern-cmake-tutorial/blob/master/library/CMakeLists.txt
-
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Sanity checks
 
     if("${fubuki_setup_NAME}" STREQUAL "")
         message(FATAL_ERROR "Project name must not be empty.")
     endif()
 
-    if(NOT "${fubuki_setup_INSTALLATION}" STREQUAL "ON" AND NOT "${fubuki_setup_INSTALLATION}" STREQUAL "OFF")
-        message(FATAL_ERROR "Invalid argument for INSTALLATION. Expected ON or OFF")
+    if(NOT "${fubuki_setup_INSTALLATION}" STREQUAL "PACKAGE"
+       AND NOT "${fubuki_setup_INSTALLATION}" STREQUAL "BINARIES"
+       AND NOT "${fubuki_setup_INSTALLATION}" STREQUAL "OFF")
+        message(FATAL_ERROR "Invalid argument for INSTALLATION. Expected one of 'PACKAGE', 'BINARIES' or 'OFF'. Got '${fubuki_setup_INSTALLATION}' .")
     endif()
 
     fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
@@ -197,75 +295,102 @@ macro(fubuki_setup)
         list(PREPEND FUBUKI_SETUP_PROJECT_LIST ${FUBUKI_PROJECT})
     endif()
 
-    # No check for ${FUBUKI_PROJECT}_components, since it's allowed to inherit that value for compatibility purposes
-    fubuki_warn_if_defined(NAMES "${FUBUKI_PROJECT}_NAMESPACE"
-                                 "${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION"
-                                 "${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION"
-                                 "${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION"
-                                 "${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR"
-                                 "${FUBUKI_PROJECT}_GENERATED_DIR"
-                                 "${FUBUKI_PROJECT}_VERSION_CONFIG"
-                                 "${FUBUKI_PROJECT}_PROJECT_CONFIG"
-                                 "${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME"
-                                 "${FUBUKI_PROJECT}_EXPORT_NAME"
-                                 "${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR"
-                           TYPE AUTHOR_WARNING)
+    # No check for ${FUBUKI_PROJECT}_components, since it's allowed to inherit that value for compatibility purposes However, the temporary variables
+    # we read must still be guarded
+    fubuki_warn_if_defined(
+        NAMES
+        "${FUBUKI_PROJECT}_NAMESPACE"
+        "${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION"
+        "${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION"
+        "${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION"
+        "${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR"
+        "${FUBUKI_PROJECT}_GENERATED_DIR"
+        "${FUBUKI_PROJECT}_VERSION_CONFIG"
+        "${FUBUKI_PROJECT}_PROJECT_CONFIG"
+        "${FUBUKI_PROJECT}_LAUNCH_SCRIPT"
+        "${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME"
+        "${FUBUKI_PROJECT}_EXPORT_NAME"
+        "${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR"
+        "current_${FUBUKI_PROJECT}_components"
+        "current_${FUBUKI_PROJECT}_executables"
+        "current_${FUBUKI_PROJECT}_tests"
+        TYPE
+        AUTHOR_WARNING)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # General setup
 
-    set(FUBUKI_PROJECT "${fubuki_setup_NAME}")             # Project name
+    set(FUBUKI_PROJECT "${fubuki_setup_NAME}") # Project name
     set(${FUBUKI_PROJECT}_NAMESPACE "${FUBUKI_PROJECT}::") # Namespace of the exported targets
 
     set(${FUBUKI_PROJECT}_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-    set(${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")      # Where the binaries are installed
-    set(${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")      # Where the libraries are installed
-    set(${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")      # Same
+    set(${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/bin") # Where the binaries are installed
+    set(${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib") # Where the libraries are installed
+    set(${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION "${CMAKE_INSTALL_PREFIX}/lib") # Same
     set(${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION "${CMAKE_INSTALL_PREFIX}/include") # Where the headers are installed
-    set(${FUBUKI_PROJECT}_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")  # Where the CMake-generated files are put
+    set(${FUBUKI_PROJECT}_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated") # Where the CMake-generated files are put
     set(${FUBUKI_PROJECT}_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin")
 
     # Windows compatibility, CMake wants UNIX-style paths
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_PREFIX               "${${FUBUKI_PROJECT}_INSTALL_PREFIX}")
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION  "${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}")
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION  "${${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION}")
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION  "${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_PREFIX "${${FUBUKI_PROJECT}_INSTALL_PREFIX}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION "${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION "${${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION "${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}")
     string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION "${${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION}")
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_GENERATED_DIR                "${${FUBUKI_PROJECT}_GENERATED_DIR}")
-    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_OUTPUT_DIR                   "${${FUBUKI_PROJECT}_OUTPUT_DIR}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_GENERATED_DIR "${${FUBUKI_PROJECT}_GENERATED_DIR}")
+    string(REPLACE "\\" "/" ${FUBUKI_PROJECT}_OUTPUT_DIR "${${FUBUKI_PROJECT}_OUTPUT_DIR}")
 
-    set(${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR "${${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION}")                              # Where the headers are installed
-    set(${FUBUKI_PROJECT}_VERSION_CONFIG "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}-config-version.cmake") # Name of the CMake version config file.
-    set(${FUBUKI_PROJECT}_PROJECT_CONFIG "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}-config.cmake")         # Name of the CMake config file.
+    # Where the headers are installed
+    set(${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR "${${FUBUKI_PROJECT}_INSTALL_INCLUDES_DESTINATION}")
 
-    set(${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME "${FUBUKI_PROJECT}_targets")  # Export set for the targets added using fubuki_add_library.
-    set(${FUBUKI_PROJECT}_EXPORT_NAME "${FUBUKI_PROJECT}-targets")          # Name of CMake Targets file
+    # Name of the CMake version config file
+    set(${FUBUKI_PROJECT}_VERSION_CONFIG "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}-config-version.cmake")
+
+    # Name of the CMake config file
+    set(${FUBUKI_PROJECT}_PROJECT_CONFIG "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}-config.cmake")
+
+    # Launch script full path
+    if(UNIX)
+        set(${FUBUKI_PROJECT}_LAUNCH_SCRIPT "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}_launch.sh")
+    elseif(WIN32)
+        set(${FUBUKI_PROJECT}_LAUNCH_SCRIPT "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}_launch.ps1")
+    else()
+        set(${FUBUKI_PROJECT}_LAUNCH_SCRIPT "${${FUBUKI_PROJECT}_GENERATED_DIR}/${FUBUKI_PROJECT}_launch")
+    endif()
+
+    set(${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME "${FUBUKI_PROJECT}_targets") # Export set for the targets added using fubuki_add_library
+    set(${FUBUKI_PROJECT}_EXPORT_NAME "${FUBUKI_PROJECT}-targets") # Name of CMake Targets file
     set(${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR "lib/cmake/${FUBUKI_PROJECT}") # Where to install cmake "Targets" files
 
-    get_property(current_${FUBUKI_PROJECT}_components GLOBAL PROPERTY ${FUBUKI_PROJECT}_components)
+    # Global properties
+    foreach(property "components" "executables" "tests")
+        get_property(current_${FUBUKI_PROJECT}_${property} GLOBAL PROPERTY ${FUBUKI_PROJECT}_${components})
 
-    if("${current_${FUBUKI_PROJECT}_components}" STREQUAL "")
-        set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_components "") # Don't override user contents in this context
-    endif()
+        if("${current_${FUBUKI_PROJECT}_${property}}" STREQUAL "")
+            set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_${property} "") # Don't override user contents in this context
+        endif()
 
-    if("${fubuki_setup_INSTALLATION}" STREQUAL "ON")
-        set(${FUBUKI_PROJECT}_INSTALLATION TRUE)
+        unset(current_${FUBUKI_PROJECT}_${property})
+    endforeach()
+
+    set(${FUBUKI_PROJECT}_INSTALLATION ${fubuki_setup_INSTALLATION})
+
+    # Win32 DLL search path
+
+    if(${fubuki_setup_WIN32_DLLS_IGNORE_CMAKE_PREFIX})
+        set(${FUBUKI_PROJECT}_WIN32_DLLS_ADDITIONAL_PATHS "${fubuki_setup_WIN32_DLLS_ADDITIONAL_PATHS}")
     else()
-        set(${FUBUKI_PROJECT}_INSTALLATION FALSE)
+        set(${FUBUKI_PROJECT}_WIN32_DLLS_ADDITIONAL_PATHS "${fubuki_setup_WIN32_DLLS_ADDITIONAL_PATHS};${CMAKE_PREFIX_PATH}")
     endif()
 
-    unset(current_${FUBUKI_PROJECT}_components)
-
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Compiler
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
         if(MINGW)
             get_filename_component(Mingw_Path ${CMAKE_CXX_COMPILER} PATH)
-            set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS
-                ${Mingw_Path}/libgcc_s_seh-1.dll ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll
-            )
+            set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_seh-1.dll ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll)
         endif()
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -273,119 +398,172 @@ macro(fubuki_setup)
         if(MINGW)
 
             get_filename_component(Mingw_Path ${CMAKE_CXX_COMPILER} PATH)
-            set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS
-                ${Mingw_Path}/libc++.dll ${Mingw_Path}/libunwind.dll ${Mingw_Path}/libwinpthread-1.dll
-            )
+            set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libc++.dll ${Mingw_Path}/libunwind.dll ${Mingw_Path}/libwinpthread-1.dll)
         endif()
 
     endif()
 
-    if(${${FUBUKI_PROJECT}_INSTALLATION})
+    if(NOT ${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "OFF")
         include(InstallRequiredSystemLibraries)
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Flags
 
     set(FUBUKI_SETUP TRUE)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Cleanup
     unset(FUBUKI_PROJECT)
 
 endmacro() # fubuki_setup
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Finalises the build process for the current project.
-########################################
+# #######################################
+#
+# param: CONFIG_FILE        - The CMake config file to configure for exported targets.
+# param: UNIX_LAUNCH_SCRIPT - The launch script to configure for Unix targets.
 #
 # output: Removes the last item added to FUBUKI_SETUP_PROJECT_LIST (by the last call of fubuki_setup).
+#         Configures the files provided as argument, if the installation is set to ON.
+#         Before configuring, the following variables are set:
+#             - FUBUKI_PROJECT_components_value: all libs added using fubuki_add_library
+#             - FUBUKI_PROJECT_executables_value: all executables added using fubuki_add_executable.
+#             - FUBUKI_PROJECT_tests_value: all tests added using fubuki_add_test.
+#             - FUBUKI_PROJECT_EXECUTABLES: all executables and tests.
 # Other variables set by fubuki_setup are left untouched.
-
+# ~~~
 macro(fubuki_finalise)
 
     if(NOT FUBUKI_SETUP_PROJECT_LIST)
         message(FATAL_ERROR "fubuki_setup(...) has no active project.")
     endif()
-    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
+
+    set(fubuki_finalise_single_value_args CONFIG_FILE UNIX_LAUNCH_SCRIPT)
+
+    cmake_parse_arguments(
+        fubuki_finalise
+        "" # Options
+        ${fubuki_finalise_single_value_args} # Single values
+        "" # Multiple values
+        ${ARGN})
+
+    fubuki_warn_if_defined(
+        NAMES
+        "FUBUKI_PROJECT"
+        "FUBUKI_PROJECT_components_value"
+        "FUBUKI_PROJECT_executables_value"
+        "FUBUKI_PROJECT_tests_value"
+        "FUBUKI_PROJECT_EXECUTABLES"
+        TYPE
+        AUTHOR_WARNING)
 
     list(GET FUBUKI_SETUP_PROJECT_LIST 0 FUBUKI_PROJECT)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Compiler runtime
 
     if(MINGW AND WIN32)
         file(COPY ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION ${${FUBUKI_PROJECT}_OUTPUT_DIR})
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Display all installed targets for project
 
     get_property(FUBUKI_PROJECT_components_value GLOBAL PROPERTY ${FUBUKI_PROJECT}_components)
+    get_property(FUBUKI_PROJECT_executables_value GLOBAL PROPERTY ${FUBUKI_PROJECT}_executables)
+    get_property(FUBUKI_PROJECT_tests_value GLOBAL PROPERTY ${FUBUKI_PROJECT}_tests)
+    string(JOIN "\" \"" FUBUKI_PROJECT_EXECUTABLES ${FUBUKI_PROJECT_executables_value} ${FUBUKI_PROJECT_tests_value})
+
     if("${FUBUKI_PROJECT}_components_value}" STREQUAL "")
         message(FATAL_ERROR "No targets to export. Something went wrong :(")
     elseif(FUBUKI_VERBOSE_BUILD)
-        message(STATUS "[Fubuki]: The following components (available in property ${FUBUKI_PROJECT}_components) will be exported: ${FUBUKI_PROJECT_components_value}")
+
+        message(
+            STATUS
+                "[Fubuki]: The following components (available in property ${FUBUKI_PROJECT}_components) will be exported: ${FUBUKI_PROJECT_components_value}"
+        )
+
+        message(
+            STATUS
+                "[Fubuki]: The following executables will be built (available in property ${FUBUKI_PROJECT}_executables): ${FUBUKI_PROJECT_executables_value}"
+        )
+
+        message(STATUS "[Fubuki]: The following tests will be built (available in property ${FUBUKI_PROJECT}_tests): ${FUBUKI_PROJECT_tests_value}")
     endif()
 
-    #----------------------------------------------------------------
-    # Configure file
+    # ----------------------------------------------------------------
+    # Launch script
 
-    # See
-    # https://github.com/schweitzer/modern-cmake-tutorial
-    # https://github.com/IRCAD/modern-cmake-tutorial
-    # From https://github.com/schweitzer/modern-cmake-tutorial/blob/master/library/CMakeLists.txt
-
-    if(${${FUBUKI_PROJECT}_INSTALLATION})
-        write_basic_package_version_file(
-            "${${FUBUKI_PROJECT}_VERSION_CONFIG}"
-            VERSION ${${FUBUKI_PROJECT}_VERSION}
-            COMPATIBILITY SameMajorVersion
-        )
-
-        # Configure the config.cmake.in
-        configure_file(
-            "${${FUBUKI_PROJECT}_SOURCE_DIR}/cmake/config.cmake.in"
-            "${${FUBUKI_PROJECT}_PROJECT_CONFIG}"
-            @ONLY
-        )
-
-        # Install cmake config files
-        install(
-            FILES "${${FUBUKI_PROJECT}_PROJECT_CONFIG}" "${${FUBUKI_PROJECT}_VERSION_CONFIG}"
-            DESTINATION "${${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR}"
-        )
-
-        # Install cmake targets files
-        install(
-            EXPORT "${${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME}"
-            NAMESPACE "${${FUBUKI_PROJECT}_NAMESPACE}"
-            DESTINATION "${${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR}"
-        )
-
-        # Install compiler-specific runtime libs (required for MinGW)
-        if(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
-            install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
-                    DESTINATION ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}
-                    COMPONENT System
-            )
+    if(UNIX)
+        if(DEFINED fubuki_finalise_UNIX_LAUNCH_SCRIPT)
+            configure_file(${fubuki_finalise_UNIX_LAUNCH_SCRIPT} "${${FUBUKI_PROJECT}_LAUNCH_SCRIPT}" @ONLY)
         endif()
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
+    # Configure file
+
+    if(NOT ${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "OFF")
+
+        if(${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "PACKAGE")
+            write_basic_package_version_file(
+                "${${FUBUKI_PROJECT}_VERSION_CONFIG}"
+                VERSION ${${FUBUKI_PROJECT}_VERSION}
+                COMPATIBILITY SameMajorVersion)
+
+            # Configure the config.cmake.in
+            configure_file(${fubuki_finalise_CONFIG_FILE} "${${FUBUKI_PROJECT}_PROJECT_CONFIG}" @ONLY)
+
+            # Install cmake config files
+            install(FILES "${${FUBUKI_PROJECT}_PROJECT_CONFIG}" "${${FUBUKI_PROJECT}_VERSION_CONFIG}"
+                    DESTINATION "${${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR}")
+
+            # Install cmake targets files
+            install(
+                EXPORT "${${FUBUKI_PROJECT}_TARGETS_EXPORT_NAME}"
+                NAMESPACE "${${FUBUKI_PROJECT}_NAMESPACE}"
+                DESTINATION "${${FUBUKI_PROJECT}_CONFIG_INSTALL_DIR}")
+        endif()
+
+        # Install compiler-specific runtime libs (required for MinGW)
+        if(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+            install(
+                PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+                DESTINATION ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}
+                COMPONENT System)
+        endif()
+
+        # Launch script
+        if(UNIX)
+            if(DEFINED fubuki_finalise_UNIX_LAUNCH_SCRIPT)
+                install(FILES "${${FUBUKI_PROJECT}_LAUNCH_SCRIPT}" DESTINATION ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+            endif()
+        endif()
+    endif()
+
+    # ----------------------------------------------------------------
     # Clear
 
     list(POP_FRONT FUBUKI_SETUP_PROJECT_LIST)
 
     unset(FUBUKI_PROJECT)
     unset(FUBUKI_PROJECT_components_value)
+    unset(FUBUKI_PROJECT_executables_value)
+    unset(FUBUKI_PROJECT_tests_value)
+    unset(FUBUKI_PROJECT_EXECUTABLES)
+    unset(fubuki_finalise_UNIX_LAUNCH_SCRIPT)
+    unset(fubuki_finalise_CONFIG_FILE)
 
 endmacro() # fubuki_finalise
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Creates a target from the sources given, links it to the libraries
 # given, installs it and updates the target list.
-########################################
+# #######################################
 # param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
 # param: TYPE                 - Target type. Either "LIBRARY" or "EXECUTABLE"
@@ -406,33 +584,37 @@ endmacro() # fubuki_finalise
 #   - (PRIVATE) ${FUBUKI_PROJECT}_TRANSLATION_UNIT
 #  -  (PRIVATE) VK_NO_PROTOTYPES
 #  -  (PRIVATE) "${current_target_upper}_COMPILE"
+# ~~~
 macro(fubuki_add_target)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Sanity checks
 
     if(NOT FUBUKI_SETUP_PROJECT_LIST)
         message(FATAL_ERROR "fubuki_setup(...) has no active project.")
     endif()
 
-    fubuki_warn_if_defined(NAMES "current_project"
-                                 "current_target_upper"
-                                 "current_source_dir_relative_path"
-                                 "current_source_dirs"
-                                 "path_root"
-                                 "headers_destination_relative_path"
-                                 "stripped_relative_path"
-                                 "components"
-                                 "public_deps"
-                                 "private_deps"
-                                 "fubuki_target_source_file"
-                                 "fubuki_target_source_file_file_lang"
-                           TYPE AUTHOR_WARNING)
+    fubuki_warn_if_defined(
+        NAMES
+        "current_project"
+        "current_target_upper"
+        "current_source_dir_relative_path"
+        "current_source_dirs"
+        "path_root"
+        "headers_destination_relative_path"
+        "stripped_relative_path"
+        "components"
+        "public_deps"
+        "private_deps"
+        "fubuki_target_source_file"
+        "fubuki_target_source_file_file_lang"
+        TYPE
+        AUTHOR_WARNING)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Arguments
 
-    set(fubuki_add_target_optional_args_identifiers)
+    set(fubuki_add_target_options_args_identifiers)
 
     set(fubuki_add_target_single_value_args_identifiers)
 
@@ -446,20 +628,23 @@ macro(fubuki_add_target)
         PUBLIC_LINK
         PRIVATE_LINK
         SYSTEM_PUBLIC_LINK
-        SYSTEM_PRIVATE_LINK
-    )
+        SYSTEM_PRIVATE_LINK)
 
-    cmake_parse_arguments(fubuki_target
-                          "${fubuki_add_target_optional_args_identifiers}"
-                          "${fubuki_add_target_single_value_args_identifiers}"
-                          "${fubuki_add_target_multi_value_args_identifiers}"
-                          ${ARGN})
+    cmake_parse_arguments(fubuki_target "${fubuki_add_target_options_args_identifiers}" "${fubuki_add_target_single_value_args_identifiers}"
+                          "${fubuki_add_target_multi_value_args_identifiers}" ${ARGN})
 
-    fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" TYPE AUTHOR_WARNING)
+    fubuki_warn_if_defined(
+        NAMES
+        "FUBUKI_PROJECT"
+        "current_${FUBUKI_PROJECT}_components"
+        "current_${FUBUKI_PROJECT}_executables"
+        "current_${FUBUKI_PROJECT}_tests"
+        TYPE
+        AUTHOR_WARNING)
 
     list(GET FUBUKI_SETUP_PROJECT_LIST 0 FUBUKI_PROJECT)
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Project name
 
     set(current_project "${fubuki_target_NAME}")
@@ -473,42 +658,49 @@ macro(fubuki_add_target)
         message(STATUS "[Fubuki]: Configuring ${FUBUKI_PROJECT}::${current_project}...")
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Build
 
     if(fubuki_target_TYPE STREQUAL "LIBRARY")
 
-        add_library(${FUBUKI_PROJECT}_${current_project} SHARED
-                    ${fubuki_target_HEADERS}
-                    ${fubuki_target_SOURCES}
-        )
+        add_library(${FUBUKI_PROJECT}_${current_project} SHARED ${fubuki_target_HEADERS} ${fubuki_target_SOURCES})
 
-        set_property(TARGET ${FUBUKI_PROJECT}_${current_project}
-                     PROPERTY EXPORT_NAME ${current_project})
+        set_property(TARGET ${FUBUKI_PROJECT}_${current_project} PROPERTY EXPORT_NAME ${current_project})
 
-        # Note: works because we only build shared libraries
-        # We put everything at the same place so that the DLLs don't need to be copied in all directories on Windows
+        # Note: works because we only build shared libraries We put everything at the same place so that the DLLs don't need to be copied in all
+        # directories on Windows
 
         # See https://stackoverflow.com/a/56514534 (CC BY-SA 4.0)
         if(WIN32)
-            set_property(TARGET ${FUBUKI_PROJECT}_${current_project}
-                         PROPERTY RUNTIME_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
+            set_property(TARGET ${FUBUKI_PROJECT}_${current_project} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
         else()
-            set_property(TARGET ${FUBUKI_PROJECT}_${current_project}
-                         PROPERTY LIBRARY_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
+            set_property(TARGET ${FUBUKI_PROJECT}_${current_project} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
         endif()
-
 
     elseif(fubuki_target_TYPE STREQUAL "EXECUTABLE" OR fubuki_target_TYPE STREQUAL "TEST")
 
-        add_executable(${FUBUKI_PROJECT}_${current_project}
-                       ${fubuki_target_HEADERS}
-                       ${fubuki_target_SOURCES}
-        )
+        add_executable(${FUBUKI_PROJECT}_${current_project} ${fubuki_target_HEADERS} ${fubuki_target_SOURCES})
 
         # We put everything at the same place so that the DLLs don't need to be copied in all directories on Windows
-        set_property(TARGET ${FUBUKI_PROJECT}_${current_project}
-                     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
+        set_property(TARGET ${FUBUKI_PROJECT}_${current_project} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${${FUBUKI_PROJECT}_OUTPUT_DIR})
+
+        if(fubuki_target_TYPE STREQUAL "EXECUTABLE")
+            get_property(current_${FUBUKI_PROJECT}_executables GLOBAL PROPERTY ${FUBUKI_PROJECT}_executables)
+
+            if("${current_${FUBUKI_PROJECT}_executables}" STREQUAL "")
+                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_executables "${current_project}")
+            else()
+                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_executables "${current_${FUBUKI_PROJECT}_executables};${current_project}")
+            endif()
+        else()
+            get_property(current_${FUBUKI_PROJECT}_tests GLOBAL PROPERTY ${FUBUKI_PROJECT}_tests)
+
+            if("${current_${FUBUKI_PROJECT}_tests}" STREQUAL "")
+                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_tests "${current_project}")
+            else()
+                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_tests "${current_${FUBUKI_PROJECT}_tests};${current_project}")
+            endif()
+        endif()
 
     else()
         message(FATAL_ERROR "Invalid argument (${fubuki_target_TYPE}) for TYPE. Must be 'LIBRARY' or 'EXECUTABLE' (case-sensitive).")
@@ -545,12 +737,8 @@ macro(fubuki_add_target)
     # Header locations
     target_include_directories(
         ${FUBUKI_PROJECT}_${current_project}
-        PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/>
-               $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/dependencies/>
-               $<INSTALL_INTERFACE:include>
-               $<INSTALL_INTERFACE:include/${FUBUKI_PROJECT}>
-               $<INSTALL_INTERFACE:include/${FUBUKI_PROJECT}/dependencies>
-    )
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/libs/> $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/dependencies/> $<INSTALL_INTERFACE:include>
+               $<INSTALL_INTERFACE:include/${FUBUKI_PROJECT}> $<INSTALL_INTERFACE:include/${FUBUKI_PROJECT}/dependencies>)
 
     # Compiler-specific
     if(MINGW AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -572,13 +760,10 @@ macro(fubuki_add_target)
     endif()
 
     # Preprocess defines
-    target_compile_definitions(${FUBUKI_PROJECT}_${current_project}
-                               PUBLIC
-                               $<$<CONFIG:Debug>:FUBUKI_DEBUG_BUILD>
-                               $<$<CONFIG:Release>:FUBUKI_RELEASE_BUILD>
-                               $<$<CONFIG:RelWithDebInfo>:FUBUKI_RELEASE_WITH_DEBUG_INFO_BUILD>
-                               $<$<CONFIG:MinSizeRel>:FUBUKI_MIN_SIZE_RELEASE_BUILD>
-                             )
+    target_compile_definitions(
+        ${FUBUKI_PROJECT}_${current_project}
+        PUBLIC $<$<CONFIG:Debug>:FUBUKI_DEBUG_BUILD> $<$<CONFIG:Release>:FUBUKI_RELEASE_BUILD>
+               $<$<CONFIG:RelWithDebInfo>:FUBUKI_RELEASE_WITH_DEBUG_INFO_BUILD> $<$<CONFIG:MinSizeRel>:FUBUKI_MIN_SIZE_RELEASE_BUILD>)
 
     # Export macros (Windows) really on this mechanism, see core/config/macros.hpp
     target_compile_definitions(${FUBUKI_PROJECT}_${current_project} PRIVATE "${current_target_upper}_COMPILE")
@@ -600,14 +785,39 @@ macro(fubuki_add_target)
     endif()
 
     # Target warnings
-    target_compile_options(${FUBUKI_PROJECT}_${current_project} PRIVATE ${FUBUKI_WARNINGS})
+    target_compile_options(${FUBUKI_PROJECT}_${current_project}
+                           PRIVATE "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang,MSVC>,$<COMPILE_LANGUAGE:CXX>>:${FUBUKI_CXX_WARNINGS}>")
+
+    # GCC (cuda)
+    foreach(fubuki_warning ${FUBUKI_GCC_WARNINGS})
+        target_compile_options(${FUBUKI_PROJECT}_${current_project}
+                               PRIVATE "$<$<AND:$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=${fubuki_warning}>")
+    endforeach()
+
+    # MSVC (cuda)
+    foreach(fubuki_warning ${FUBUKI_MSVC_WARNINGS})
+        string(REPLACE "/wd" "-wd" fubuki_warning_nvcc "${fubuki_warning}") # Yes, NVCC requires the / to become a - even on Windows
+        string(REPLACE "/W" "-W" fubuki_warning_nvcc "${fubuki_warning_nvcc}")
+        target_compile_options(${FUBUKI_PROJECT}_${current_project}
+                               PRIVATE "$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=${fubuki_warning_nvcc}>")
+    endforeach()
+
+    # CUDA headers sometimes don't clause pragmas popping warnings in the same header, which breaks MSVC's C5031
+    target_compile_options(${FUBUKI_PROJECT}_${current_project}
+                           PRIVATE "$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=-wd5031>")
+    # CUDA sometimes generate .c files, which shouldn't care about exceptions
+    target_compile_options(${FUBUKI_PROJECT}_${current_project}
+                           PRIVATE "$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=-wd5039>")
+
+    # Clang Unlike what one may think, CUDA uses gcc as a host compiler on Linux by default It's therfore an error to add this: foreach(fubuki_warning
+    # ${FUBUKI_CLANG_WARNINGS}) target_compile_options(${FUBUKI_PROJECT}_${current_project} PRIVATE
+    # "$<$<AND:$<CXX_COMPILER_ID:Clang>,$<COMPILE_LANGUAGE:CUDA>>:-Xcompiler=${fubuki_warning}>") endforeach()
 
     # CUDA
     if(UNIX)
         foreach(fubuki_target_source_file ${fubuki_target_SOURCES})
             get_source_file_property(fubuki_target_source_file_file_lang ${fubuki_target_source_file} LANGUAGE)
-            # CUDA generates intermediate C code that uses GCC extensions on Linux and produces errors with
-            # -Wpedantic, which is enabled by Fubuki
+            # CUDA generates intermediate C code that uses GCC extensions on Linux and produces errors with -Wpedantic, which is enabled by Fubuki
             if("${fubuki_target_source_file_file_lang}" STREQUAL "CUDA")
                 set_source_files_properties(${fubuki_target_source_file} PROPERTIES COMPILE_FLAGS "-Wno-pedantic")
             endif()
@@ -616,7 +826,15 @@ macro(fubuki_add_target)
         unset(fubuki_target_source_file_file_lang)
     endif()
 
-    #----------------------------------------------------------------
+    # Remove MOC warnings completely Nothing to do for MSVC, overrind W3 with W0 raises D9025 instead
+    set_source_files_properties("${FUBUKI_PROJECT}_${current_project}_autogen/mocs_compilation.cpp"
+                                PROPERTIES COMPILE_FLAGS "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<COMPILE_LANGUAGE:C,CXX>>:-w>")
+
+    # Remove warning from Qt translation files
+    set_source_files_properties(${CMAKE_BINARY_DIR}/.qt/rcc/qrc_${FUBUKI_PROJECT}_${current_project}_translations.cpp
+                                PROPERTIES COMPILE_FLAGS "$<$<AND:$<CXX_COMPILER_ID:GNU,Clang>,$<COMPILE_LANGUAGE:C,CXX>>:-w>")
+
+    # ----------------------------------------------------------------
     # Install
 
     if(fubuki_target_TYPE STREQUAL "LIBRARY")
@@ -640,7 +858,7 @@ macro(fubuki_add_target)
                 message("[Fubuki]:     -- Installing to: ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}/${headers_destination_relative_path}")
             endif()
 
-            if(${${FUBUKI_PROJECT}_INSTALLATION})
+            if(${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "PACKAGE")
                 install(
                     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
                     DESTINATION ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}/${headers_destination_relative_path}
@@ -650,39 +868,36 @@ macro(fubuki_add_target)
                     PATTERN "*.hxx"
                     PATTERN "*.cuh"
                     PATTERN "*.cuxx"
-                    PATTERN "doxygen/*" EXCLUDE
-                )
+                    PATTERN "doxygen/*" EXCLUDE)
             endif()
 
             # Targets update
-            get_property(components GLOBAL PROPERTY ${FUBUKI_PROJECT}_components)
+            get_property(current_${FUBUKI_PROJECT}_components GLOBAL PROPERTY ${FUBUKI_PROJECT}_components)
 
-            if("${components}" STREQUAL "")
+            if("${current_${FUBUKI_PROJECT}_components}" STREQUAL "")
                 set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_components "${current_project}")
             else()
-                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_components "${components};${current_project}")
+                set_property(GLOBAL PROPERTY ${FUBUKI_PROJECT}_components "${current_${FUBUKI_PROJECT}_components};${current_project}")
             endif()
+
         elseif("${path_root}" STREQUAL "tutorials")
-            target_include_directories(
-                ${FUBUKI_PROJECT}_${current_project}
-                PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tutorials/>
-            )
+            target_include_directories(${FUBUKI_PROJECT}_${current_project} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tutorials/>)
         elseif("${path_root}" STREQUAL "tests")
-            target_include_directories(
-                ${FUBUKI_PROJECT}_${current_project}
-                PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests/>
-            )
+            target_include_directories(${FUBUKI_PROJECT}_${current_project} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tests/>)
         endif()
 
     endif()
 
-    if(${${FUBUKI_PROJECT}_INSTALLATION})
+    if(${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "PACKAGE" OR ${${FUBUKI_PROJECT}_INSTALLATION} STREQUAL "BINARIES")
 
-        fubuki_install_dlls_of(TARGET ${FUBUKI_PROJECT}_${current_project}
-                               LIBS ${fubuki_target_PUBLIC_LINK}
-                                    ${fubuki_target_PRIVATE_LINK}
-                                    ${fubuki_target_SYSTEM_PUBLIC_LINK}
-                                    ${fubuki_target_SYSTEM_PRIVATE_LINK})
+        fubuki_install_dlls_of(
+            TARGET
+            ${FUBUKI_PROJECT}_${current_project}
+            LIBS
+            ${fubuki_target_PUBLIC_LINK}
+            ${fubuki_target_PRIVATE_LINK}
+            ${fubuki_target_SYSTEM_PUBLIC_LINK}
+            ${fubuki_target_SYSTEM_PRIVATE_LINK})
 
         install(
             TARGETS ${FUBUKI_PROJECT}_${current_project}
@@ -690,29 +905,33 @@ macro(fubuki_add_target)
             RUNTIME DESTINATION ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}
             ARCHIVE DESTINATION ${${FUBUKI_PROJECT}_INSTALL_ARCHIVE_DESTINATION}
             LIBRARY DESTINATION ${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}
-            INCLUDES DESTINATION ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}
-        )
+            INCLUDES
+            DESTINATION ${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR})
 
         if(FUBUKI_VERBOSE_BUILD)
             add_custom_command(
-                TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E echo "[Fubuki]: ${FUBUKI_PROJECT}_${current_project} installation: copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>"
-                COMMAND_EXPAND_LISTS
-            )
+                TARGET ${FUBUKI_PROJECT}_${current_project}
+                POST_BUILD
+                COMMAND
+                    ${CMAKE_COMMAND} -E echo
+                    "[Fubuki]: ${FUBUKI_PROJECT}_${current_project} installation: copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>"
+                COMMAND_EXPAND_LISTS)
         endif()
 
-        add_custom_command(TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E make_directory
-                                   ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
+        add_custom_command(
+            TARGET ${FUBUKI_PROJECT}_${current_project}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION})
 
         add_custom_command(
-            TARGET ${FUBUKI_PROJECT}_${current_project} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION} $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>
-            COMMAND_EXPAND_LISTS
-        )
+            TARGET ${FUBUKI_PROJECT}_${current_project}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy -t ${${FUBUKI_PROJECT}_INSTALL_RUNTIME_DESTINATION}
+                    $<TARGET_RUNTIME_DLLS:${FUBUKI_PROJECT}_${current_project}>
+            COMMAND_EXPAND_LISTS)
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Test
 
     if(fubuki_target_TYPE STREQUAL "TEST")
@@ -721,7 +940,7 @@ macro(fubuki_add_target)
         gtest_discover_tests(${FUBUKI_PROJECT}_${current_project} DISCOVERY_MODE PRE_TEST PROPERTIES TEST_DISCOVERY_TIMEOUT 10)
     endif()
 
-    #----------------------------------------------------------------
+    # ----------------------------------------------------------------
     # Cleanup
 
     unset(FUBUKI_PROJECT)
@@ -732,7 +951,9 @@ macro(fubuki_add_target)
     unset(path_root)
     unset(headers_destination_relative_path)
     unset(stripped_relative_path)
-    unset(components)
+    unset(current_${FUBUKI_PROJECT}_components)
+    unset(current_${FUBUKI_PROJECT}_executables)
+    unset(current_${FUBUKI_PROJECT}_tests)
 
     if(FUBUKI_VERBOSE_BUILD)
         message(STATUS "[Fubuki]: Done.")
@@ -740,10 +961,11 @@ macro(fubuki_add_target)
 
 endmacro()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Creates a shared library from the sources given, links it to the libraries
 # given, installs it and updates the target list.
-########################################
+# #######################################
 # param: NAME                 - Name of the library.
 #                               A prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
@@ -757,14 +979,16 @@ endmacro()
 # Also handles installation and components updates.
 #
 # prerequisites: fubuki_setup must have been called before.
+# ~~~
 macro(fubuki_add_library)
     fubuki_add_target(TYPE "LIBRARY" ${ARGN})
 endmacro() # fubuki_add_library
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Creates an executable from the sources given, links it to the libraries
 # given, installs it and updates the target list.
-########################################
+# #######################################
 # param: NAME                 - Name of the library.
 #                               A prefix "${FUBUKI_PROJECT}_" is appended automatically, in which FUBUKI_PROJECT is the name of the last project registered through fubuki_setup.
 #                               EXPORT_NAME property is set to ${NAME}.
@@ -779,15 +1003,16 @@ endmacro() # fubuki_add_library
 # Also handles installation and components updates.
 #
 # prerequisites: fubuki_setup must have been called before.
-#
+# ~~~
 macro(fubuki_add_executable)
     fubuki_add_target(TYPE "EXECUTABLE" ${ARGN})
 endmacro() # fubuki_add_executable
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# ~~~
 # Creates a test target from the sources given, links it to the libraries
 # given (also adds GTest::gtest), and adds it to the test set.
-########################################
+# #######################################
 # param: NAME                 - Name of the library. Prefix "${FUBUKI_PROJECT}_" is appended automatically.
 #                               EXPORT_NAME property is set to ${NAME}.
 # param: PUBLIC_DEPENDENCIES  - Targets that must be build before this one and linked publicly.
@@ -801,9 +1026,9 @@ endmacro() # fubuki_add_executable
 # Also handles installation and components updates.
 #
 # prerequisites: fubuki_setup must have been called before.
-#
+# ~~~
 macro(fubuki_add_test)
     fubuki_add_target(TYPE "TEST" ${ARGN})
 endmacro() # fubuki_add_test
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
