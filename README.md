@@ -39,13 +39,11 @@ Fubuki is designed to be both idiomatic (modern) C++ and idiomatic low-level gra
 
 ## Compiler support
 
-| Compiler        | Platform | Manually tested    | CI-tested          |
-| --------------- | -------- | ------------------ | ------------------ |
-| `clang-19`      | Linux    | :white_check_mark: | :white_check_mark: |
-| `gcc-14`        | Linux    | :white_check_mark: | :white_check_mark: |
-| `MSVC-2022`     | Windows  | :white_check_mark: | :white_check_mark: |
-| `MinGW/gcc-13`  | Windows  | :white_check_mark: | :x:                |
-| `MinGW/LLVM-17` | Windows  | :white_check_mark: | :x:                |
+| Compiler    | Platform | Manually tested    | CI-tested          |
+| ----------- | -------- | ------------------ | ------------------ |
+| `clang-19`  | Linux    | :white_check_mark: | :white_check_mark: |
+| `gcc-14`    | Linux    | :white_check_mark: | :white_check_mark: |
+| `MSVC-2022` | Windows  | :white_check_mark: | :white_check_mark: |
 
 ## Dependencies
 
