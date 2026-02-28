@@ -5,14 +5,20 @@ include(cmake/macros.cmake)
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/macros.cmake FUBUKI_CMAKE_MACROS)
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/warning_setup.cmake FUBUKI_SETUP_WARNING_LIST)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # CMake options
 
-set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)")
+set(CMAKE_BUILD_TYPE
+    ${CMAKE_BUILD_TYPE}
+    CACHE STRING "Build type (Debug, Release, RelWithDebInfo, MinSizeRel)")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" AND NOT CMAKE_BUILD_TYPE STREQUAL "MinSizeRel" )
-    message(FATAL_ERROR "Invalid value for CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}' (required one of 'Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel')")
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
+   AND NOT CMAKE_BUILD_TYPE STREQUAL "Release"
+   AND NOT CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo"
+   AND NOT CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+    message(
+        FATAL_ERROR "Invalid value for CMAKE_BUILD_TYPE: '${CMAKE_BUILD_TYPE}' (required one of 'Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel')")
 endif()
 
 option(FUBUKI_BUILD_TESTS "Build Fubuki unit tests." OFF)
@@ -24,8 +30,8 @@ option(FUBUKI_VERBOSE_BUILD "Display detailed messages when configuring Fubuki."
 set(FUBUKI_INSTALL
     "PACKAGE"
     CACHE
-    STRING
-    "Installation type (PACKAGE, BINARIES, OFF). PACKAGE: Install as a package, with headers and CMake target files. BINARIES: install only executables and DLLs. OFF: don't install. If not OFF, will install to CMAKE_INSTALL_PREFIX."
+        STRING
+        "Installation type (PACKAGE, BINARIES, OFF). PACKAGE: Install as a package, with headers and CMake target files. BINARIES: install only executables and DLLs. OFF: don't install. If not OFF, will install to CMAKE_INSTALL_PREFIX."
 )
 set_property(CACHE FUBUKI_INSTALL PROPERTY STRINGS "PACKAGE;BINARIES;OFF")
 
@@ -34,7 +40,7 @@ mark_as_advanced(FUBUKI_SKIP_GENERATION)
 if(${FUBUKI_NO_IO} AND ${FUBUKI_BUILD_TUTORIALS})
     set(FUBUKI_BUILD_TUTORIALS OFF)
     message(WARNING "FUBUKI_BUILD_TUTORIALS is not compatible with FUBUKI_NO_IO: the tutorials depend on fubuki::io."
-                     " They won't be built. To silence this warning, set FUBUKI_BUILD_TUTORIALS to OFF")
+                    " They won't be built. To silence this warning, set FUBUKI_BUILD_TUTORIALS to OFF")
 endif()
 
 if(${FUBUKI_NO_IO} AND ${FUBUKI_BUILD_TESTS})
@@ -42,15 +48,15 @@ if(${FUBUKI_NO_IO} AND ${FUBUKI_BUILD_TESTS})
     message(WARNING "Some tests that depend on fubuki::io won't be build. To silence this warning, set FUBUKI_BUILD_TESTS to OFF.")
 endif()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Project
 
-project(fubuki
-        LANGUAGES CXX C
-        VERSION 1.0.0
-        DESCRIPTION "Idiomatic C++23 cross-platform composable abstraction framework for Vulkan and low-level graphics."
-        HOMEPAGE_URL "https://github.com/Erellu/fubuki"
-)
+project(
+    fubuki
+    LANGUAGES CXX C
+    VERSION 1.0.0
+    DESCRIPTION "Idiomatic C++23 cross-platform composable abstraction framework for Vulkan and low-level graphics."
+    HOMEPAGE_URL "https://github.com/Erellu/fubuki")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 23)
@@ -58,7 +64,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 fubuki_setup_warning_list()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Dependencies
 
 include(CMakePackageConfigHelpers)
@@ -68,13 +74,12 @@ if(PROJECT_IS_TOP_LEVEL)
     find_package(Vulkan REQUIRED)
 endif()
 
-if (NOT Vulkan_FOUND)
-    message(FATAL_ERROR
-            "Could not find Vulkan! "
-            "Can you confirm you downloaded the SDK? https://www.lunarg.com/vulkan-sdk/"
+if(NOT Vulkan_FOUND)
+    message(
+        FATAL_ERROR
+            "Could not find Vulkan! " "Can you confirm you downloaded the SDK? https://www.lunarg.com/vulkan-sdk/"
             "\nNOTE: if Fubuki is a subproject (added via add_subdirectory), you must perform your own find_package(Vulkan)."
-            "This is to enable the user (you) to provide hints to CMake."
-        )
+            "This is to enable the user (you) to provide hints to CMake.")
 endif()
 
 if(UNIX)
@@ -82,11 +87,14 @@ if(UNIX)
     find_package(wayland_client 1.10.0 REQUIRED)
 endif()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Code generation
 
 # Always required for glslang's update_sources.py
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+find_package(
+    Python3
+    COMPONENTS Interpreter
+    REQUIRED)
 
 if(NOT ${FUBUKI_SKIP_GENERATION})
 
@@ -108,19 +116,13 @@ if(NOT ${FUBUKI_SKIP_GENERATION})
     set(FUBUKI_CODEGEN_STDOUT "")
     execute_process(
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        COMMAND ${Python3_EXECUTABLE} py/code_generation/main.py
-                --license ${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt
-                --libs ${CMAKE_CURRENT_LIST_DIR}/libs
-                --tests ${CMAKE_CURRENT_LIST_DIR}/tests
-                --templates ${CMAKE_CURRENT_LIST_DIR}/py/code_generation/templates
-                --cache ${CMAKE_CURRENT_LIST_DIR}/py/code_generation/cache
-                --vulkan-sdk "${VULKAN_SDK_PATH}"
-                --clang-format-exe ${CLANG_FORMAT_EXECUTABLE}
-                --clang-format-file ${CMAKE_CURRENT_LIST_DIR}/.clang-format
-
+        COMMAND
+            ${Python3_EXECUTABLE} py/code_generation/main.py --license ${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt --libs ${CMAKE_CURRENT_LIST_DIR}/libs
+            --tests ${CMAKE_CURRENT_LIST_DIR}/tests --templates ${CMAKE_CURRENT_LIST_DIR}/py/code_generation/templates --cache
+            ${CMAKE_CURRENT_LIST_DIR}/py/code_generation/cache --vulkan-sdk "${VULKAN_SDK_PATH}" --clang-format-exe ${CLANG_FORMAT_EXECUTABLE}
+            --clang-format-file ${CMAKE_CURRENT_LIST_DIR}/.clang-format
         OUTPUT_VARIABLE FUBUKI_CODEGEN_STDOUT
-        RESULT_VARIABLE FUBUKI_CODE_GEN_SUCCESS
-    )
+        RESULT_VARIABLE FUBUKI_CODE_GEN_SUCCESS)
 
     if(${FUBUKI_VERBOSE_BUILD})
         message(STATUS "${FUBUKI_CODEGEN_STDOUT}")
@@ -133,19 +135,16 @@ else()
     message(STATUS "Skipping code generation. To enable it, set FUBUKI_SKIP_GENERATION to OFF.")
 endif()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Targets
 
-fubuki_setup(
-    NAME "fubuki"
-    INSTALLATION ${FUBUKI_INSTALL}
-)
+fubuki_setup(NAME "fubuki" INSTALLATION ${FUBUKI_INSTALL})
 
 add_subdirectory(dependencies)
 add_subdirectory(libs)
 
 if(FUBUKI_BUILD_TUTORIALS)
-     add_subdirectory(tutorials)
+    add_subdirectory(tutorials)
 endif()
 
 if(FUBUKI_BUILD_TESTS)
