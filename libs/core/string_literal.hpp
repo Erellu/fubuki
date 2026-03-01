@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <functional>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -74,10 +75,35 @@ public:
     using difference_type = std::ptrdiff_t;
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+// This is on purpose: you are only able to create objects in constexpr context.
+// Throwing in this configuration forces to stop the compilation (until we get support for exceptions in constexpr context in C++26)
+// Even with C++26 we _do_ want this to be fatal: it's a critical programmer error because that means this class is used outside its scope.
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wexceptions"
+#elif defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic push
+    // GCC-14 bug: throw invalid_argument in this context causes Wold-style-cast for no reason
+    #pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
     template<std::size_t size>
     consteval string_literal(const char (&s)[size]) noexcept : string_literal{static_cast<const char*>(s), size - 1}
     {
+        if constexpr(size > 0)
+        {
+            if(s[size - 1] != '\0')
+            {
+                throw std::invalid_argument("Not null terminated");
+            }
+        }
     }
+
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#elif defined(__GNUC__) && !defined(__clang__)
+    #pragma GCC diagnostic pop
+#endif
 
     consteval string_literal() noexcept : string_literal{""} {}
     consteval string_literal(std::nullptr_t) = delete;
