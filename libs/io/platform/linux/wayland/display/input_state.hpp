@@ -33,8 +33,6 @@
 #include <optional>
 #include <utility>
 
-#include <core/types.hpp>
-
 #include "io/platform/current_platform.hpp"
 #include "io/platform/keyboard_key.hpp"
 #include "io/platform/linux/event/mouse_state.hpp"

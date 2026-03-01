@@ -64,18 +64,6 @@ struct call_info
         return result.operator bool();
     }
 
-    /// Converts a result to the underlying Vulkan result code.
-    [[nodiscard]]
-    constexpr operator VkResult() const noexcept
-    requires requires(result_type t) {
-        { t.operator VkResult() };
-    }
-    // FIXME: this triggers an internal compiler error in MSVC
-    /*and std::is_nothrow_invocable_v<decltype(&result_type::operator VkResult), result_type>*/
-    {
-        return result.operator VkResult();
-    }
-
     template<typename char_type, typename traits = std::char_traits<char_type>>
     friend std::basic_ostream<char_type, traits>& operator<<(std::basic_ostream<char_type, traits>& out, const call_info& c)
     {

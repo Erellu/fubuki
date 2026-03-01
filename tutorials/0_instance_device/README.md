@@ -15,7 +15,7 @@ This tutorial explains how to create a Vulkan instance and a Vulkan logical devi
 
 Unlike frameworks that introduce a global context, similar to OpenGL, there is no such notion in Fubuki.
 Overall, the API is designed so that the workflow is **identical** to what one would do using Vulkan's C API.
-[Tutorial 02](https://github.com/Erellu/fubuki/tree/master/tutorials/2_vulkan_context) explains how an application can setup its own context (handles that need to be accessible through all the application), but this _has_ to be implemented explicitly.
+[Tutorial 02](https://github.com/Erellu/fubuki/tree/dev/tutorials/2_vulkan_context) explains how an application can setup its own context (handles that need to be accessible through all the application), but this _has_ to be implemented explicitly.
 
 ### Error handling
 
@@ -224,4 +224,4 @@ fuyu::buffer borrowing_buffer{{fuyu::borrow{owning_buffer.handle()}}, owning_buf
 
 _______________________________________________
 
-[Next tutorial](https://github.com/Erellu/fubuki/tree/master/tutorials/1_window)
+[Next tutorial](https://github.com/Erellu/fubuki/tree/dev/tutorials/1_window)

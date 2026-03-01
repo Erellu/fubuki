@@ -55,7 +55,7 @@ It provides objects with RAII semantics, that support `move` (but not copy), and
 > [!NOTE]
 > All of these objects follow the same paradigm, define the same interface and share the same pattern for provided aliases. For example, `fuyu::device::information` is an alias to `fuyu::information::device`, `fuyu::device::view` is an alias to `fuyu::views::device`, etc.
 > Member functions are named identically and perform the same operation regardless of the object.
-> **Note that `fubuki::fuyu` objects support borrowing or taking ownership over an externally-allocated Vulkan handle through `fuyu::external_handle` (see also: [Tutorial 00: Instance and device](https://github.com/Erellu/fubuki/tree/master/tutorials/0_instance_device)).**
+> **Note that `fubuki::fuyu` objects support borrowing or taking ownership over an externally-allocated Vulkan handle through `fuyu::external_handle` (see also: [Tutorial 00: Instance and device](https://github.com/Erellu/fubuki/tree/dev/tutorials/0_instance_device)).**
 
 | Name                    | Type    | Category            | Description                                                                                                | Notes                       |
 | ----------------------- | ------- | ------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -166,7 +166,7 @@ It provides objects with RAII semantics, that support `move` (but not copy), and
 
 ### Commands
 
-Functions provided in `fubuki::fuyu::command` are the strict analogues to `vkCmdxxx`, except the first argument is a `fuyu::command_buffer_view`. See [fuyu/command](https://github.com/Erellu/fubuki/tree/master/libs/fuyu/command).
+Functions provided in `fubuki::fuyu::command` are the strict analogues to `vkCmdxxx`, except the first argument is a `fuyu::command_buffer_view`. See [fuyu/command](https://github.com/Erellu/fubuki/tree/dev/libs/fuyu/command).
 Similarly, functions manipulating objects are also the strict analogue to the Vulkan C-API:
 
 - The `vk` prefix is **removed**.
@@ -188,7 +188,7 @@ Similarly, functions manipulating objects are also the strict analogue to the Vu
 
 #### Pipes
 
-Briefly: `fubuki::fuyu` offers free functions to manipulate command buffers (see above), and also provides an equivalent _composable_ interfaces similar to pipes of `std::ranges`. See [fuyu/command](https://github.com/Erellu/fubuki/tree/master/libs/fuyu/command/pipe) for more details.
+Briefly: `fubuki::fuyu` offers free functions to manipulate command buffers (see above), and also provides an equivalent _composable_ interfaces similar to pipes of `std::ranges`. See [fuyu/command](https://github.com/Erellu/fubuki/tree/dev/libs/fuyu/command/pipe) for more details.
 
 **Example**:
 

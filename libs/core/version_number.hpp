@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FUBUKI_CONFIG_VERSION_NUMBER_HPP
-#define FUBUKI_CONFIG_VERSION_NUMBER_HPP
+#ifndef FUBUKI_CORE_VERSION_NUMBER_HPP
+#define FUBUKI_CORE_VERSION_NUMBER_HPP
 
 #include <cstdint>
 #include <ostream>
@@ -83,4 +83,4 @@ struct version_number
 
 } // namespace fubuki
 
-#endif // FUBUKI_FUYU_VERSION_NUMBER_HPP
+#endif // FUBUKI_CORE_VERSION_NUMBER_HPP

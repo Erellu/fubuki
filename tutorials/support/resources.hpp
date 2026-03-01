@@ -147,7 +147,7 @@ public:
         m_swapchain_resources.swap(other.m_swapchain_resources);
     }
 
-    friend void swap(resources& a, resources& b) noexcept { return a.swap(b); }
+    friend void swap(resources& a, resources& b) noexcept { a.swap(b); }
 
 private:
 

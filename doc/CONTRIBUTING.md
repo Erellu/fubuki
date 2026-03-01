@@ -53,7 +53,7 @@ To provide a contribution through a pull request:
 If your design and solution is accepted:
 
 1. **Open** a pull request.
-    - Apply and fill [the template](https://github.com/Erellu/fubuki/blob/master/.github/PULL_REQUEST_TEMPLATE/pull_request_template.md).
+    - Apply and fill [the template](https://github.com/Erellu/fubuki/blob/dev/.github/PULL_REQUEST_TEMPLATE/pull_request_template.md).
 2. **Wait** for review from a maintainer.
 3. **Discuss** proposed changes with the reviewer.
     - ***A reviewer's word is NOT ABSOLUTE***.

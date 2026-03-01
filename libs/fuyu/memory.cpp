@@ -78,9 +78,11 @@ namespace fubuki::fuyu
 
     if(not index)
     {
-        return api_call_info{.result       = {VK_ERROR_FEATURE_NOT_PRESENT},
-                             .call_literal = "fuyu::hardware::memory_index - No matching memory type for the given requirements"_literal,
-                             .location     = std::source_location::current()};
+        return std::unexpected{
+            api_call_info{.result       = {VK_ERROR_FEATURE_NOT_PRESENT},
+                          .call_literal = "fuyu::hardware::memory_index - No matching memory type for the given requirements"_literal,
+                          .location     = std::source_location::current()}
+        };
     }
 
     return *index;

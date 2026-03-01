@@ -29,7 +29,7 @@
 #ifndef FUBUKI_IO_MOUSE_STATE_HPP
 #define FUBUKI_IO_MOUSE_STATE_HPP
 
-#include <core/types.hpp>
+#include <core/pos.hpp>
 
 namespace fubuki::io::mouse
 {

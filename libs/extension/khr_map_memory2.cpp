@@ -38,7 +38,7 @@ namespace fubuki::extension::khr_map_memory2
 [[nodiscard]]
 std::expected<std::byte*, api_call_info> map_memory2(const functions& ext, device_handle device, const VkMemoryMapInfoKHR& memory_map_info) noexcept
 {
-    std::byte* begin = nullptr;
+    std::byte* begin = nullptr; // NOLINT(misc-const-correctness): false positive
 
     {
         auto* erased_begin = static_cast<void*>(begin);

@@ -352,4 +352,4 @@ for(const auto& screen : fubuki::io::screen::enumerate(display))
 
 _______________________________________________
 
-[Next tutorial](https://github.com/Erellu/fubuki/tree/master/tutorials/2_vulkan_context)
+[Next tutorial](https://github.com/Erellu/fubuki/tree/dev/tutorials/2_vulkan_context)

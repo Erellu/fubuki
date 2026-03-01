@@ -32,12 +32,9 @@
 
 #include "hyoka/shader/compile.hpp"
 
-#include <glslang/Include/ResourceLimits.h>
-#include <glslang/Public/ResourceLimits.h>
-#include <glslang/Public/ShaderLang.h>
-#include <glslang/SPIRV/GlslangToSpv.h>
-
 #include <core/assertion.hpp>
+
+#include "hyoka/shader/detail/glslang.hpp"
 
 namespace fubuki::hyoka::shader
 {

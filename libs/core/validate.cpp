@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSD 2-Clause License
  *
  * Copyright (c) 2025, Erwan DUHAMEL
@@ -37,9 +37,9 @@ void assertion(const VkResult code, string_literal condition_literal, std::sourc
 {
     if(code != VK_SUCCESS)
     {
-        const std::string info = result{code};
+        const auto info = to_string_view(code);
 
-        crash(info.c_str(), condition_literal, location);
+        crash(info, condition_literal, location);
     }
 }
 

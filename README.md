@@ -10,48 +10,46 @@ Fubuki is designed to be both idiomatic (modern) C++ and idiomatic low-level gra
 
 ## Documentation
 
-- Tutorials: see [/tutorials](https://github.com/Erellu/fubuki/tree/master/tutorials).
+- Tutorials: see [/tutorials](https://github.com/Erellu/fubuki/tree/dev/tutorials).
 - Doxygen: run `doxygen` on the `Doxyfile` available at the repository root.
-- Style guide, design notes, contribution guidelines: see [/doc](https://github.com/Erellu/fubuki/tree/master/doc).
+- Style guide, design notes, contribution guidelines: see [/doc](https://github.com/Erellu/fubuki/tree/dev/doc).
 
 ## Highlights
 
-- Minimally-invasive abstractions thanks to the [pass-by-view paradigm](https://github.com/Erellu/fubuki/blob/master/doc/STYLE-GUIDE.md#semantics-stylecppsemantics).
+- Minimally-invasive abstractions thanks to the [pass-by-view paradigm](https://github.com/Erellu/fubuki/blob/dev/doc/STYLE-GUIDE.md#semantics-stylecppsemantics).
     - Fubuki's API is **designed to limit the changes required in existing code to benefit from its features**.
 - Reports error with `std::expected` unless otherwise specified. 
     - Constructors that can `throw` **have a `noexcept` equivalent factory function**.
-- [Compile-time validated](https://github.com/Erellu/fubuki/tree/master/libs/core/pnext_chain.hpp) `pNext` chain.
-- [Compile-time validated](https://github.com/Erellu/fubuki/tree/master/libs/core/pfn.hpp) loading system for Vulkan function pointers (`PFN`).
+- [Compile-time validated](https://github.com/Erellu/fubuki/tree/dev/libs/core/pnext_chain.hpp) `pNext` chain.
+- [Compile-time validated](https://github.com/Erellu/fubuki/tree/dev/libs/core/pfn.hpp) loading system for Vulkan function pointers (`PFN`).
     - `fubuki::invoke<"vkFunctionName">`/`fubuki::fuyu::invoke<"...">` invoke the corresponding Vulkan function with **zero runtime overhead**.
 - Platform-agnostic API to create native window surfaces.
 - Platform-agnostic API to interact with the keyboard, the mouse and display monitor (under the restrictions of the platform).
 - Accessible internals for custom platform-specific code.
 - `fubuki::small_vector` (`vector` with Small Buffer Optimisation - SBO)
 - Much, ***much*** more. For a _slightly_ more in-depth overview of the features Fubuki provides, see the corresponding `README.md` in each library:
-    - [`fubuki::core`](https://github.com/Erellu/fubuki/blob/master/libs/core/README.md)
-    - [`fubuki::extension`](https://github.com/Erellu/fubuki/blob/master/libs/extension/README.md)
-    - [`fubuki::fuyu`](https://github.com/Erellu/fubuki/blob/master/libs/fuyu/README.md)
-        - [`fubuki::fuyu::command`](https://github.com/Erellu/fubuki/blob/master/libs/fuyu/command/README.md)
-    - [`fubuki::hyoka`](https://github.com/Erellu/fubuki/blob/master/libs/hyoka/README.md)
-    - [`fubuki::io`](https://github.com/Erellu/fubuki/blob/master/libs/io/README.md)
-        - [`fubuki::io::platform`](https://github.com/Erellu/fubuki/blob/master/libs/io/platform/README.md)
-    - [`fubuki::maths`](https://github.com/Erellu/fubuki/blob/master/libs/maths/README.md)
+    - [`fubuki::core`](https://github.com/Erellu/fubuki/blob/dev/libs/core/README.md)
+    - [`fubuki::extension`](https://github.com/Erellu/fubuki/blob/dev/libs/extension/README.md)
+    - [`fubuki::fuyu`](https://github.com/Erellu/fubuki/blob/dev/libs/fuyu/README.md)
+        - [`fubuki::fuyu::command`](https://github.com/Erellu/fubuki/blob/dev/libs/fuyu/command/README.md)
+    - [`fubuki::hyoka`](https://github.com/Erellu/fubuki/blob/dev/libs/hyoka/README.md)
+    - [`fubuki::io`](https://github.com/Erellu/fubuki/blob/dev/libs/io/README.md)
+        - [`fubuki::io::platform`](https://github.com/Erellu/fubuki/blob/dev/libs/io/platform/README.md)
+    - [`fubuki::maths`](https://github.com/Erellu/fubuki/blob/dev/libs/maths/README.md)
 
 ## Compiler support
 
-| Compiler        | Platform | Manually tested    | CI-tested          |
-| --------------- | -------- | ------------------ | ------------------ |
-| `clang-19`      | Linux    | :white_check_mark: | :white_check_mark: |
-| `gcc-14`        | Linux    | :white_check_mark: | :white_check_mark: |
-| `MSVC-2022`     | Windows  | :white_check_mark: | :white_check_mark: |
-| `MinGW/gcc-13`  | Windows  | :white_check_mark: | :x:                |
-| `MinGW/LLVM-17` | Windows  | :white_check_mark: | :x:                |
+| Compiler    | Platform | Manually tested    | CI-tested          |
+| ----------- | -------- | ------------------ | ------------------ |
+| `clang-19`  | Linux    | :white_check_mark: | :white_check_mark: |
+| `gcc-14`    | Linux    | :white_check_mark: | :white_check_mark: |
+| `MSVC-2022` | Windows  | :white_check_mark: | :white_check_mark: |
 
 ## Dependencies
 
 - [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/). 
     - Fubuki code is provided for `1.4.309.0`.
-    - Version-dependent code can be regenerated for any other SDK version which uses a compatible format for the Vulkan registry. See the [maintenance documentation](https://github.com/Erellu/fubuki/tree/master/doc/maintaining).
+    - Version-dependent code can be regenerated for any other SDK version which uses a compatible format for the Vulkan registry. See the [maintenance documentation](https://github.com/Erellu/fubuki/tree/dev/doc/maintaining).
 - CMake **3.23** or later.
 - A compiler supporting **C++23**.
 - Python 3.9 or above (see https://www.python.org/ for installation details).
@@ -107,14 +105,14 @@ git submodule update
 
 ### CMake options
 
-| Name                     | Description                                                                                                                                                                            | Default |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `FUBUKI_BUILD_TESTS`     | Build Fubuki unit tests                                                                                                                                                                | `OFF`   |
-| `FUBUKI_BUILD_TUTORIALS` | Build Fubuki tutorials.                                                                                                                                                                | `ON`    |
-| `FUBUKI_INSTALL`         | Install Fubuki to directory set in `CMAKE_INSTALL_PREFIX`.                                                                                                                             | `ON`    |
-| `FUBUKI_NO_IO`           | Do not build `fubuki::io` (use this when building Fubuki for a platform `fubuki::io` doesn't support, such as OSX). This also disables tutorials and tests that depend on this target. | `OFF`   |
-| `FUBUKI_SKIP_GENERATION` | (Dev) Skip code generations processes. Put it on `OFF` when changing the Vulkan SDK version.                                                                                           | `ON`    |
-| `FUBUKI_VERBOSE_BUILD`   | (Dev) Display detailed messages when configuring Fubuki.                                                                                                                               | `OFF`   |
+| Name                     | Description                                                                                                                                                                                                                                        | Default   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `FUBUKI_BUILD_TESTS`     | Build Fubuki unit tests                                                                                                                                                                                                                            | `OFF`     |
+| `FUBUKI_BUILD_TUTORIALS` | Build Fubuki tutorials.                                                                                                                                                                                                                            | `ON`      |
+| `FUBUKI_INSTALL`         | Installation type (`PACKAGE`, `BINARIES`, `OFF`). `PACKAGE`: Install as a package, with headers and CMake target files. `BINARIES`: install only executables and DLLs. `OFF`: don't install. If not `OFF`, will install to `CMAKE_INSTALL_PREFIX`. | `PACKAGE` | 
+| `FUBUKI_NO_IO`           | Do not build `fubuki::io` (use this when building Fubuki for a platform `fubuki::io` doesn't support, such as OSX). This also disables tutorials and tests that depend on this target.                                                             | `OFF`     |
+| `FUBUKI_SKIP_GENERATION` | (Dev) Skip code generations processes. Put it on `OFF` when changing the Vulkan SDK version.                                                                                                                                                       | `ON`      |
+| `FUBUKI_VERBOSE_BUILD`   | (Dev) Display detailed messages when configuring Fubuki.                                                                                                                                                                                           | `OFF`     |
 
 ## Installation
 
@@ -191,9 +189,9 @@ _______________________________________________________________________________
 ### `fuyu`
 
 See:
-- [Tutorial 00: Instance and device](https://github.com/Erellu/fubuki/tree/master/tutorials/0_instance_device): basic usage and general semantics
-- [Tutorial 02: Vulkan context](https://github.com/Erellu/fubuki/tree/master/tutorials/2_vulkan_context): how to build a declarative API to setup a complete execution context.
-- [Tutorial 04: Triangle](https://github.com/Erellu/fubuki/tree/master/tutorials/4_triangle):  The usual triangle, using Vulkan 1.3's _dynamic rendering_, `fubuki::fuyu` and `fuyu::command::pipe`.
+- [Tutorial 00: Instance and device](https://github.com/Erellu/fubuki/tree/dev/tutorials/0_instance_device): basic usage and general semantics
+- [Tutorial 02: Vulkan context](https://github.com/Erellu/fubuki/tree/dev/tutorials/2_vulkan_context): how to build a declarative API to setup a complete execution context.
+- [Tutorial 04: Triangle](https://github.com/Erellu/fubuki/tree/dev/tutorials/4_triangle):  The usual triangle, using Vulkan 1.3's _dynamic rendering_, `fubuki::fuyu` and `fuyu::command::pipe`.
 
 #### Invoke Vulkan functions by name
 
@@ -222,7 +220,7 @@ VkExtent2D render_area_granularity(const fuyu::render_pass_view pass) noexcept
 
 #### Composable pipes
 
-`fubuki::fuyu` introduces **[`command pipes`](https://github.com/Erellu/fubuki/tree/master/libs/fuyu/command)** that can be used to compose an execution flow, similar to `std::ranges`:
+`fubuki::fuyu` introduces **[`command pipes`](https://github.com/Erellu/fubuki/tree/dev/libs/fuyu/command)** that can be used to compose an execution flow, similar to `std::ranges`:
 
 <details>
 <summary>Example C++ code</summary>
@@ -402,7 +400,7 @@ _______________________________________________________________________________
 ### `hyoka`
 
 See:
-- [Tutorial 03: Compiling shaders](https://github.com/Erellu/fubuki/tree/master/tutorials/3_compiling_shaders)
+- [Tutorial 03: Compiling shaders](https://github.com/Erellu/fubuki/tree/dev/tutorials/3_compiling_shaders)
 
 #### On-the-fly shader compilation
 
@@ -430,9 +428,9 @@ Fubuki is opened to all contributions, but reserves the right to decline pull re
 
 For more information, see:
 
-- The style guide: [See the associated Markdown file.](https://github.com/Erellu/fubuki/blob/master/doc/STYLE-GUIDE.md)
-- The contribution guidelines: [See the associated Markdown file.](https://github.com/Erellu/fubuki/blob/master/doc/CONTRIBUTING.md)
-- The design notes: [See the associated Markdown file.](https://github.com/Erellu/fubuki/tree/master/doc/DESIGN.md)
+- The style guide: [See the associated Markdown file.](https://github.com/Erellu/fubuki/blob/dev/doc/STYLE-GUIDE.md)
+- The contribution guidelines: [See the associated Markdown file.](https://github.com/Erellu/fubuki/blob/dev/doc/CONTRIBUTING.md)
+- The design notes: [See the associated Markdown file.](https://github.com/Erellu/fubuki/tree/dev/doc/DESIGN.md)
 
 ## License
 

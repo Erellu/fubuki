@@ -1,6 +1,11 @@
+cmake_minimum_required(VERSION 3.26)
 project(fubuki_dependencies LANGUAGES CXX)
 
-#------------------------------------------------------------------------------
+fubuki_warn_if_defined(NAMES "FUBUKI_PROJECT" AUTHOR_WARNING)
+
+set(FUBUKI_PROJECT "fubuki")
+
+# ------------------------------------------------------------------------------
 # Previous state of options
 
 if(DEFINED BUILD_SHARED_LIBS)
@@ -19,11 +24,9 @@ elseif(MSVC)
     string(REPLACE "/W3" "/w" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 endif()
 
-#------------------------------------------------------------------------------
-# GLM
-# GLM does not provide a full CMake install when added as dependency.
-# To be precise, it only installs when ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR}.
-# So we do it here for them, because we expose their headers (hence need that)
+# ------------------------------------------------------------------------------
+# GLM GLM does not provide a full CMake install when added as dependency. To be precise, it only installs when ${CMAKE_SOURCE_DIR} STREQUAL
+# ${CMAKE_CURRENT_SOURCE_DIR}. So we do it here for them, because we expose their headers (hence need that)
 
 add_subdirectory(glm)
 
@@ -52,35 +55,35 @@ set(GLM_VERSION ${GLM_VERSION_MAJOR}.${GLM_VERSION_MINOR}.${GLM_VERSION_PATCH}.$
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/glm/glm/"
     DESTINATION "${${FUBUKI_PROJECT}_INCLUDES_INSTALL_DIR}/${FUBUKI_PROJECT}/dependencies/glm"
-    PATTERN "CMakeLists.txt" EXCLUDE
-)
+    PATTERN "CMakeLists.txt" EXCLUDE)
 
 install(TARGETS glm-header-only glm EXPORT glm)
 
-install(EXPORT glm
-        FILE glmConfig.cmake
-        DESTINATION "${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}/cmake/${FUBUKI_PROJECT}/dependencies/glm"
-        NAMESPACE glm::)
+install(
+    EXPORT glm
+    FILE glmConfig.cmake
+    DESTINATION "${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}/cmake/${FUBUKI_PROJECT}/dependencies/glm"
+    NAMESPACE glm::)
 
 write_basic_package_version_file(
     "glmConfigVersion.cmake"
     VERSION ${GLM_VERSION}
-    COMPATIBILITY AnyNewerVersion
-)
+    COMPATIBILITY AnyNewerVersion)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glmConfigVersion.cmake
         DESTINATION ${${FUBUKI_PROJECT}_INSTALL_LIBRARY_DESTINATION}/cmake/${FUBUKI_PROJECT}/dependencies/glm)
 
-#------------------------------------------------------------------------------
-# GLSLANG
-# We have no reason to install glslang as we link with static libraries and do not expose its headers.
-# We also hide glslang options, as we do not want to allow the user to set some special options
+# ------------------------------------------------------------------------------
+# GLSLANG We have no reason to install glslang as we link with static libraries and do not expose its headers. We also hide glslang options, as we do
+# not want to allow the user to set some special options
 
 set(update_glslang_sources ${FUBUKI_REFRESH_GLSLANG_SOURCES})
 
 if(NOT DEFINED FUBUKI_GLSLANG_SOURCES)
     set(update_glslang_sources TRUE)
-    set(FUBUKI_REFRESH_GLSLANG_SOURCES OFF CACHE BOOL "Keep current glslang external sources. Setting this option to ON will re-run glslang's update_sources.py.")
+    set(FUBUKI_REFRESH_GLSLANG_SOURCES
+        OFF
+        CACHE BOOL "Keep current glslang external sources. Setting this option to ON will re-run glslang's update_sources.py.")
     mark_as_advanced(FORCE FUBUKI_GLSLANG_SOURCES)
 endif()
 
@@ -94,8 +97,7 @@ if(update_glslang_sources)
         execute_process(
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/glslang
             COMMAND ${Python3_EXECUTABLE} update_glslang_sources.py
-            RESULT_VARIABLE glslang_update_src_result
-        )
+            RESULT_VARIABLE glslang_update_src_result)
         if(glslang_update_src_result AND NOT glslang_update_src_result EQUAL 0)
             message(FATAL_ERROR "Failed to generate update glslang sources. See the previous messages for more detail.")
         endif()
@@ -107,8 +109,7 @@ if(update_glslang_sources)
             WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/glslang
             COMMAND ${Python3_EXECUTABLE} update_glslang_sources.py
             OUTPUT_VARIABLE SILENCE
-            RESULT_VARIABLE glslang_update_src_result
-        )
+            RESULT_VARIABLE glslang_update_src_result)
 
         # Except when the call failed, in which case it's cool to get logs
         if(glslang_update_src_result AND NOT glslang_update_src_result EQUAL 0)
@@ -121,10 +122,11 @@ if(update_glslang_sources)
     message(STATUS "Done.")
 endif()
 
-set(FUBUKI_REFRESH_GLSLANG_SOURCES OFF CACHE BOOL "Keep current glslang external sources. Setting this option to ON will re-run glslang's update_sources.py.")
+set(FUBUKI_REFRESH_GLSLANG_SOURCES
+    OFF
+    CACHE BOOL "Keep current glslang external sources. Setting this option to ON will re-run glslang's update_sources.py.")
 
-# glslang is too painful to have as a shared library.
-# fubuki::render_tools is a shared library making the interface anyway
+# glslang is too painful to have as a shared library. fubuki::render_tools is a shared library making the interface anyway
 set(ALLOW_EXTERNAL_SPIRV_TOOLS OFF)
 set(BUILD_EXTERNAL ON)
 set(BUILD_GMOCK OFF)
@@ -139,9 +141,11 @@ set(ENABLE_GLSLANG_WEBMIN_DEVEL OFF)
 set(ENABLE_EMSCRIPTEN_SINGLE_FILE OFF)
 set(ENABLE_EMSCRIPTEN_ENVIRONMENT_NODE OFF)
 set(ENABLE_HLSL ON)
-set(ENABLE_RTTI OFF)
+set(ENABLE_RTTI ON) # Not necessarily used, but emits a warning with MSVC because it overrides /GR with /GR-
 set(ENABLE_EXCEPTIONS OFF)
 set(ENABLE_OPT ON)
+set(GLSLANG_TESTS OFF)
+set(SPIRV_HEADERS_ENABLE_TESTS OFF)
 
 if(MINGW OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND ${CMAKE_CXX_COMPILER_ID} MATCHES "GNU"))
     set(ENABLE_PCH OFF)
@@ -177,29 +181,19 @@ add_subdirectory(glslang)
 unset(SPIRV_LIB_FUZZING_ENGINE_LINK_OPTIONS CACHE)
 unset(SPIRV_SKIP_TESTS CACHE)
 
-# Taken from https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/CMakeLists.txt
-# Available under the terms of the Apache 2.0 license
-# See https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/LICENSE
-# for detailed information.
+# Taken from https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/CMakeLists.txt Available under the terms of the Apache 2.0 license See
+# https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/LICENSE for detailed information.
 
-set(GLSLANG_LIBRARIES GenericCodeGen
-                      glslang
-                      glslang-default-resource-limits
-                      MachineIndependent
-                      OSDependent
-                      SPIRV)
+set(GLSLANG_LIBRARIES GenericCodeGen glslang glslang-default-resource-limits MachineIndependent OSDependent SPIRV)
 
-# Circular dependencies exist between glslang static libs, add them all as link dependencies for each other
-# See https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/CMakeLists.txt
+# Circular dependencies exist between glslang static libs, add them all as link dependencies for each other See
+# https://github.com/KhronosGroup/Vulkan-ExtensionLayer/blob/master/CMakeLists.txt
 foreach(GLSLANG_LIBRARY ${GLSLANG_LIBRARIES})
-    set_target_properties(${GLSLANG_LIBRARY}
-                          PROPERTIES INTERFACE_LINK_LIBRARIES
-                                     "${GLSLANG_LIBRARIES}")
+    set_target_properties(${GLSLANG_LIBRARY} PROPERTIES INTERFACE_LINK_LIBRARIES "${GLSLANG_LIBRARIES}")
 endforeach()
 
-#------------------------------------------------------------------------------
-# GTEST
-# We only build googletest if tests are build
+# ------------------------------------------------------------------------------
+# GTEST We only build googletest if tests are build
 
 if(DEFINED gtest_force_shared_crt)
     set(old_gtest_force_shared_crt ${gtest_force_shared_crt})
@@ -216,13 +210,14 @@ endif()
 if(FUBUKI_BUILD_TESTS)
     set(gtest_force_shared_crt ON)
     set(gtest_hide_internal_symbols ON)
+    set(BUILD_GMOCK ON)
     set(INSTALL_GTEST OFF)
     set(GTEST_HAS_ABSL OFF)
 
     add_subdirectory(googletest)
 endif()
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Restore old options for the current scope
 
 if(DEFINED old_BUILD_SHARED_LIBS)

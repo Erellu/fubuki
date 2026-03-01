@@ -53,6 +53,12 @@
     #define FUBUKI_TRUE_PURE
 #endif
 
+#if defined(_MSC_VER)
+    #define FUBUKI_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+    #define FUBUKI_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
 /********************************************************************************/
 /*                                ASSERTION TOGGLE                              */
 /********************************************************************************/

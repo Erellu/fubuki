@@ -164,3 +164,14 @@ fubuki_add_library(NAME                 target_name
 | `event::loop::next::user`   | Free function        | Event loop | Processes the next pending event in a user queue.                                                                            | Non-blocking (excluding the duration taken to handle the event).                                              |
 | `event::loop::pending`      | Free function        | Event loop | Indicates if a display has pending events, without handling the events.                                                      | Non-blocking.                                                                                                 |
 | `event::loop::routines`     | Type alias, `struct` | Event loop | Customisation points for the event loop. Allows to perform user-defined actions at various timings while waiting for events. | N.A.                                                                                                          |
+
+### Timing
+
+#### Profiling
+
+| Name            | Type                 | Category  | Description                                                                                                                                                              | Notes |
+| --------------- | -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| `begin_profile` | Free function        | Profiling | Starts profiling through the most precise clock available on the current platform (performance counters on Windows, `CLOCK_MONOTONIC_RAW` on Linux).                     | N.A.  |
+| `end_profile`   | Free function        | Profiling | Ends a profiling scope.                                                                                                                                                  | N.A.  |
+| `profile`       | Free function        | Profiling | Profiles the execution of a function through the most precise clock available on the current platform (performance counters on Windows, `CLOCK_MONOTONIC_RAW` on Linux). | N.A.  |
+| `profile_data`  | Type alias, `struct` | Profiling | Platform-specific data required to determine a duration when profiling.                                                                                                  | N.A.  |

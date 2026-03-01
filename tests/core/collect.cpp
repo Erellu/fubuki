@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSD 2-Clause License
  *
  * Copyright (c) 2025, Erwan DUHAMEL

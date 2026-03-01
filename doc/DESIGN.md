@@ -120,7 +120,7 @@ Overall, Fubuki attempts to stick to the following rules, detailed hereinafter i
 
 ### Overhead: You don't pay for what you don't use `[design.philosophy.overhead]`
 
-1. Fubuki _attempts_ to conform to C++'s [`Zero Overhead Principle`](https://en.cppreference.com/w/cpp/language/Zero-overhead_principle.html).
+1. Fubuki _attempts_ to conform to C++'s [`Zero Overhead Principle`](https://en.cppreference.com/w/cpp/language/Zero-overhead_principle.html).
 
 > **Rationale**:
 > The very goal of low-level graphics is to provide an API that can maximise the performance of the application through low-level control of the GPU and the CPU commands. Introducing unneeded overhead in Fubuki would not align with such goals.
@@ -136,7 +136,7 @@ Overall, Fubuki attempts to stick to the following rules, detailed hereinafter i
 > **Rationale**:
 > Introducing a new dependency is... A difficult decision. Especially for codebases written in C++ (and C).
 > Transition has a cost, and even if the new dependency has wonderful features that could speedup the development time in the long run, if the transition would be too expensive, it _won't_ be performed.
-> Fubuki is designed so favour **pass-by-view** ([see the style guide](https://github.com/Erellu/fubuki/tree/master/tutorials/doc/STYLE-GUIDE.md) for more about this, in particular `[style.cpp.semantics#1]`).
+> Fubuki is designed so favour **pass-by-view** ([see the style guide](https://github.com/Erellu/fubuki/tree/dev/tutorials/doc/STYLE-GUIDE.md) for more about this, in particular `[style.cpp.semantics#1]`).
 > The pass-by-view paradigm works _very_ well in functional approaches to mitigate the cost of transition from- and to a framework: the caller is never required to use the abstractions that own data (it can keep that as-is), is only needs to provide a valid _view_ of the contents to the API. Which is... Much simpler to obtain.
 > For a similar reason, objects provided through `fubuki::fuyu` that wrap a Vulkan handle (`fubuki::fuyu::instance`, `fubuki::fuyu::device` and _all_ others) can work with handles allocated externally. They can take ownership over them, or just "borrow" them for their lifetime, facilitating the integration of such abstractions in an existing codebase. At the cost of _responsibility_.
 

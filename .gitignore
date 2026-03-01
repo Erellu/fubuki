@@ -74,6 +74,12 @@ Thumbs.db
 *.user
 *.TMP
 
+# --------
+# CLion and Intellisense
+
+.idea/*
+
+# --------
 # For folks building in their sources
 build/
 install/

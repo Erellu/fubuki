@@ -35,9 +35,10 @@
 
 #include <core/collect.hpp>
 #include <core/config/macros.hpp>
+#include <core/dim.hpp>
 #include <core/format.hpp>
 #include <core/handle.hpp>
-#include <core/types.hpp>
+#include <core/pos.hpp>
 #include <core/vulkan.hpp>
 
 #include "fuyu/detail/formatted_storage.hpp"
@@ -73,7 +74,7 @@ public:
     formatted_storage(VkFormat f)
         : m_info{
               .extent = {0u, 0u, 0u},
-                .format = f
+              .format = f,
     }
     {
     }
